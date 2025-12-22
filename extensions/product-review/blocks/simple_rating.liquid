@@ -1,0 +1,164 @@
+{% comment %}
+  Customer product rating display with configurable star color.
+  Usage: This is designed as a BLOCK to be added within sections in the theme editor.
+{% endcomment %}
+
+{% liquid
+  comment
+    Get product from either block settings (product page) or direct context (collection page)
+  endcomment
+  assign product = block.settings.product | default: product
+  assign avg_rating_initial = product.metafields.reviews.rating.value | round: 1 | default: 0
+  assign review_count_initial = product.metafields.reviews.count.value | default: 0
+  
+  # Calculate stars with precise decimal handling
+  assign full_stars = avg_rating_initial | floor
+  assign remainder = avg_rating_initial | minus: full_stars
+  assign next_star = full_stars | plus: 1
+%}
+
+<div class="simple-rating-block" data-product-id="{{ product.id }}">
+  <div class="rating-badge">
+    
+    <span class="stars-container">
+      {% for i in (1..5) %}
+        {% if i <= full_stars %}
+          <span class="full-star">★</span>
+        {% elsif i == next_star and remainder > 0 %}
+          <span class="partial-star" style="--fill-percentage: {{ remainder | times: 100 }}%">
+            <span class="empty-star">☆</span>
+            <span class="filled-part">★</span>
+          </span>
+        {% else %}
+          <span class="empty-star">☆</span>
+        {% endif %}
+      {% endfor %}
+    </span>
+    <span class="average-rating">
+      {{ avg_rating_initial }}
+    </span>
+    {% if review_count_initial > 0 %}
+      <span class="review-count">({{ review_count_initial }})</span>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .simple-rating-block {
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 4px 0;
+  }
+  
+  .rating-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+  
+  .stars-container {
+    font-size: 1rem;
+    letter-spacing: 1px;
+    display: inline-flex;
+    color: #FFD700; 
+    
+  }
+  
+  .full-star {
+    color: inherit;
+    
+  }
+  
+  .empty-star {
+    color: #000000; 
+  }
+  
+  .partial-star {
+    position: relative;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+  }
+  
+  .partial-star .filled-part {
+    position: absolute;
+    left: 0;
+    width: var(--fill-percentage);
+    overflow: hidden;
+    color: inherit; 
+  }
+  
+ 
+  .partial-star .empty-star {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: #000000; 
+  }
+  
+  .average-rating {
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .review-count {
+    color: #777;
+    font-size: 0.85rem;
+  }
+</style>
+
+<script>
+
+  document.addEventListener('DOMContentLoaded', function() {
+  const starsContainers = document.querySelectorAll('.simple-rating-block .stars-container');
+
+    if (starsContainers.length > 0) {
+      // Define the path to  API endpoint.
+      const settingsApiUrl = '/apps/productreview/api/settings';
+
+      fetch(settingsApiUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+      
+          if (data && data.starColor) {
+           
+            starsContainers.forEach(container => {
+              container.style.color = data.starColor;
+            });
+          } else {
+            console.warn('Star color not found in app settings API response.');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching app settings for star color:', error);
+       
+        });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Simple Rating Display",
+  "target": "section",
+  "templates": ["collection", "product"],
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "autofill": true,
+      "info": "This setting is for previewing the block. On product pages, it will automatically use the current product."
+    }
+  ]
+}
+{% endschema %}

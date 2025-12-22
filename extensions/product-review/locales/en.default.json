@@ -1,0 +1,31 @@
+{
+  "shopify": {
+    "welcome": "Welcome to Shopify!"
+  },
+  "ratings": {
+    "stars": {
+      "label": "Rating"
+    },
+    "home": {
+      "recommendationText": "Recommended"
+    },
+    "reviews": {
+      "count": "reviews",
+      "view": "View all",
+      "write": "Write a review",
+      "empty": "No reviews yet. Be the first to review!",
+      "loading": "Loading reviews...",
+      "title": "Customer Reviews",
+      "your_rating": "Your Rating",
+      "your_name": "Your Name",
+      "your_email": "Your Email",
+      "review_title": "Review Title",
+      "your_review": "Your Review",
+      "submit": "Submit Review",
+      "thank_you": "Thank you for your review!",
+      "error": "There was an error submitting your review. Please try again.",
+      "excellent": "Excellent",
+      "based_on": "Based on"
+    }
+  }
+}

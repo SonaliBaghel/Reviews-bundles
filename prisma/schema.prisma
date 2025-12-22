@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("session")
+}
+
+model ProductReview {
+  id                   String              @id @default(uuid())
+  productId            String
+  rating               Int
+  author               String
+  email                String
+  title                String?
+  content              String              @db.Text
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  deletedAt            DateTime?
+  status               String              @default("pending")
+  isBundleReview       Boolean             @default(false)
+  bundleContext        String?
+  originalSyndications ReviewSyndication[] @relation("OriginalReview")
+  syndicatedCopies     ReviewSyndication[] @relation("SyndicatedReview")
+  bundleReviews        BundleReview[]
+  images               ReviewImage[]
+
+  @@index([deletedAt])
+  @@index([productId])
+  @@index([bundleContext])
+  @@index([isBundleReview])
+  @@map("product_reviews")
+}
+
+model ReviewImage {
+  id            String        @id @default(uuid())
+  url           String        @db.Text
+  altText       String?
+  order         Int?
+  reviewId      String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  productReview ProductReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_images")
+}
+
+model BundleReview {
+  id              String        @id @default(uuid())
+  bundleProductId String
+  reviewId        String
+  productId       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  review          ProductReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, productId])
+  @@index([bundleProductId])
+  @@index([productId])
+  @@map("bundle_reviews")
+}
+
+model ReviewBundle {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  bundleProductId String   @unique
+  productIds      String   @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bundleProductId])
+  @@map("review_bundles")
+}
+
+model ReviewSyndication {
+  id                 String        @id @default(uuid())
+  originalReviewId   String
+  syndicatedReviewId String
+  bundleId           String
+  productId          String
+  createdAt          DateTime      @default(now())
+  originalReview     ProductReview @relation("OriginalReview", fields: [originalReviewId], references: [id], onDelete: Cascade)
+  syndicatedReview   ProductReview @relation("SyndicatedReview", fields: [syndicatedReviewId], references: [id], onDelete: Cascade)
+
+  @@unique([originalReviewId, syndicatedReviewId, bundleId, productId])
+  @@index([originalReviewId])
+  @@index([syndicatedReviewId])
+  @@index([bundleId])
+  @@index([productId])
+}
+
+model AppSettings {
+  id                    String   @id @default(uuid())
+  starColor             String   @default("#FFD700")
+  backgroundColor       String   @default("#F9F9F9")
+  headingColor          String   @default("#222222")
+  reviewCardColor       String   @default("#FFFFFF")
+  reviewsPerSlide       Int      @default(3)
+  displayType           String   @default("slider")
+  gridRows              Int      @default(2)
+  gridColumns           Int      @default(2)
+  sliderAutoplay        Boolean  @default(true)
+  sliderSpeed           Int      @default(3000)
+  sliderLoop            Boolean  @default(true)
+  sliderDirection       String   @default("horizontal")
+  spaceBetween          Int      @default(20)
+  showNavigation        Boolean  @default(true)
+  sliderEffect          String   @default("slide")
+  sectionBorderRadius   Int      @default(12)
+  headingText           String   @default("CUSTOMER TESTIMONIALS")
+  headingFontFamily     String   @default("theme")
+  headingFontSize       Int      @default(40)
+  headingFontWeight     String   @default("bold")
+  headingFontStyle      String   @default("normal")
+  headingTextTransform  String   @default("uppercase")
+  headingLetterSpacing  Int      @default(0)
+  headingLineHeight     Float    @default(1.2)
+  headingTextShadow     String   @default("none")
+  ratingLabelText       String   @default("Excellent")
+  ratingLabelFontFamily String   @default("theme")
+  ratingLabelFontSize   Int      @default(18)
+  ratingLabelFontWeight String   @default("600")
+  ratingLabelColor      String   @default("#555555")
+  ratingValueFontFamily String   @default("theme")
+  ratingValueFontSize   Int      @default(18)
+  ratingValueFontWeight String   @default("600")
+  ratingValueColor      String   @default("#555555")
+  reviewCountPrefix     String   @default("Based on")
+  reviewCountSuffix     String   @default("reviews")
+  reviewCountFontFamily String   @default("theme")
+  reviewCountFontSize   Int      @default(16)
+  reviewCountFontWeight String   @default("normal")
+  reviewCountColor      String   @default("#777777")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("app_settings")
+}

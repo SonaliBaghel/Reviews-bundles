@@ -1,0 +1,24 @@
+name = "product-review"
+uid = "de731272-3fd3-4901-92a5-3ec46364e0ec51f865d4"
+type = "theme_app_extension"
+handle = "product-review-extension"
+
+[[extensions]]
+type = "theme_app_extension"
+handle = "product-review-blocks"
+description = "Product rating blocks"
+
+[[extensions.blocks]]
+type = "catalog_rating"
+name = "Catalog Rating"
+template = "blocks/catalog_rating.liquid"  # Correct path to your block file
+
+[[extensions.blocks]]
+type = "star_rating"
+name = "Star Rating"
+template = "blocks/star_rating.liquid"
+
+[[extensions.blocks]]
+type = "simple_rating"
+name = "Simple Rating"
+template = "blocks/simple_rating.liquid"

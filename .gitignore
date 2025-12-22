@@ -1,0 +1,32 @@
+# dependencies
+node_modules
+
+# env
+.env
+.env.*
+
+# databases
+*.db
+*.sqlite
+*.sql
+
+# prisma
+.prisma
+
+# build
+dist
+build
+.vite
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+
+# mysql junk
+mysql-connector-j-8.4.0
+mysql-connector-j-8.4.0.tar.gz
+shopify_reviews_backup.sql
