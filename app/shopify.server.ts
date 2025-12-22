@@ -7,6 +7,11 @@ import {
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
 
+console.log("Initializing Shopify App...");
+console.log("SHOPIFY_APP_URL:", process.env.SHOPIFY_APP_URL ? "SET" : "MISSING");
+console.log("SHOPIFY_API_KEY:", process.env.SHOPIFY_API_KEY ? "SET" : "MISSING");
+console.log("SHOPIFY_API_SECRET:", process.env.SHOPIFY_API_SECRET ? "SET" : "MISSING");
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
