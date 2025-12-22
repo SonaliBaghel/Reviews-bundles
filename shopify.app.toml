@@ -26,9 +26,9 @@ scopes = "write_files,write_products"
 
 [auth]
 redirect_urls = [
-  "https://arachnid-light-gradually.ngrok-free.app/auth/callback",
-  "https://arachnid-light-gradually.ngrok-free.app/auth/shopify/callback",
-  "https://arachnid-light-gradually.ngrok-free.app/api/auth/callback"
+  "https://reviews-bundles-production.up.railway.app/auth/callback",
+  "https://reviews-bundles-production.up.railway.app/auth/shopify/callback",
+  "https://reviews-bundles-production.up.railway.app/api/auth/callback"
 ]
 
 [app_proxy]
