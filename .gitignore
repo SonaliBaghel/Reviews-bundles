@@ -8,7 +8,7 @@ node_modules
 # databases
 *.db
 *.sqlite
-*.sql
+shopify_reviews_backup.sql
 
 # prisma
 .prisma
