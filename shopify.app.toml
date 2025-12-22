@@ -2,13 +2,12 @@
 
 client_id = "8973433047eddaada0c289dc7d8be87f"
 name = "GWL Reviews"
-application_url = "https://arachnid-light-gradually.ngrok-free.app"
+application_url = "https://reviews-bundles-production.up.railway.app/"
 embedded = true
 handle = "gwl-reviews"
 
 [build]
 automatically_update_urls_on_dev = true
-include_config_on_deploy = true
 
 [webhooks]
 api_version = "2025-04"
@@ -33,7 +32,7 @@ redirect_urls = [
 ]
 
 [app_proxy]
-url = "https://arachnid-light-gradually.ngrok-free.app"
+url = "https://reviews-bundles-production.up.railway.app/"
 subpath = "productreview"
 prefix = "apps"
 
