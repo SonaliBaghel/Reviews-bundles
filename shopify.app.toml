@@ -2,7 +2,7 @@
 
 client_id = "8973433047eddaada0c289dc7d8be87f"
 name = "GWL Reviews"
-application_url = "https://reviews-bundles-production.up.railway.app/"
+application_url = "https://reviews-bundles-production.up.railway.app"
 embedded = true
 handle = "gwl-reviews"
 
@@ -10,7 +10,7 @@ handle = "gwl-reviews"
 automatically_update_urls_on_dev = true
 
 [webhooks]
-api_version = "2025-04"
+api_version = "2025-01"
 
   [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
@@ -34,7 +34,7 @@ redirect_urls = [
 ]
 
 [app_proxy]
-url = "https://reviews-bundles-production.up.railway.app/"
+url = "https://reviews-bundles-production.up.railway.app"
 subpath = "productreview"
 prefix = "apps"
 
