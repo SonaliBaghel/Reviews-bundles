@@ -29,7 +29,8 @@ redirect_urls = [
   "https://reviews-bundles-production.up.railway.app/app/auth/callback",
   "https://reviews-bundles-production.up.railway.app/app/auth/shopify/callback",
   "https://reviews-bundles-production.up.railway.app/api/auth/callback",
-  "https://reviews-bundles-production.up.railway.app/auth/callback"
+  "https://reviews-bundles-production.up.railway.app/auth/callback",
+  "https://reviews-bundles-production.up.railway.app/auth/shopify/callback"
 ]
 
 [app_proxy]
