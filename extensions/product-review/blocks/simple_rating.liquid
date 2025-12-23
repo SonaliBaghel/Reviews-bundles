@@ -35,11 +35,17 @@
       {% endfor %}
     </span>
     <span class="average-rating">
-      {{ avg_rating_initial }}
+      {% if review_count_initial > 0 %}
+        {{ avg_rating_initial }}
+      {% else %}
+        No reviews yet
+      {% endif %}
     </span>
-    {% if review_count_initial > 0 %}
-      <span class="review-count">({{ review_count_initial }})</span>
-    {% endif %}
+    <span class="review-count">
+      {% if review_count_initial > 0 %}
+        ({{ review_count_initial }})
+      {% endif %}
+    </span>
   </div>
 </div>
 
@@ -63,16 +69,14 @@
     letter-spacing: 1px;
     display: inline-flex;
     color: #FFD700; 
-    
   }
   
   .full-star {
     color: inherit;
-    
   }
   
   .empty-star {
-    color: #000000; 
+    color: #ccc; 
   }
   
   .partial-star {
@@ -90,14 +94,13 @@
     color: inherit; 
   }
   
- 
   .partial-star .empty-star {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    color: #000000; 
+    color: #ccc; 
   }
   
   .average-rating {
@@ -112,37 +115,64 @@
 </style>
 
 <script>
-
   document.addEventListener('DOMContentLoaded', function() {
-  const starsContainers = document.querySelectorAll('.simple-rating-block .stars-container');
+    const block = document.querySelector('.simple-rating-block[data-product-id="{{ product.id }}"]');
+    if (!block) return;
 
-    if (starsContainers.length > 0) {
-      // Define the path to  API endpoint.
-      const settingsApiUrl = '/apps/productreview/api/settings';
+    const productId = block.dataset.productId;
+    const starsContainer = block.querySelector('.stars-container');
+    const averageRatingSpan = block.querySelector('.average-rating');
+    const reviewCountSpan = block.querySelector('.review-count');
 
-      fetch(settingsApiUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-      
-          if (data && data.starColor) {
-           
-            starsContainers.forEach(container => {
-              container.style.color = data.starColor;
-            });
-          } else {
-            console.warn('Star color not found in app settings API response.');
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching app settings for star color:', error);
-       
-        });
+    function renderStars(rating) {
+      let starsHtml = '';
+      const fullStars = Math.floor(rating);
+      const remainder = rating - fullStars;
+
+      for (let i = 1; i <= 5; i++) {
+        if (i <= fullStars) {
+          starsHtml += '<span class="full-star">★</span>';
+        } else if (i === fullStars + 1 && remainder > 0) {
+          starsHtml += `<span class="partial-star" style="--fill-percentage: ${remainder * 100}%">
+            <span class="empty-star">☆</span>
+            <span class="filled-part">★</span>
+          </span>`;
+        } else {
+          starsHtml += '<span class="empty-star">☆</span>';
+        }
+      }
+      return starsHtml;
     }
+
+    // 1. Fetch Star Color
+    fetch('/apps/productreview/api/settings')
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.starColor && starsContainer) {
+          starsContainer.style.color = data.starColor;
+        }
+      })
+      .catch(err => console.error('Error fetching star color:', err));
+
+    // 2. Fetch Live Review Data
+    fetch(`/apps/productreview/api/productreview?productId=${productId}`)
+      .then(response => response.json())
+      .then(reviews => {
+        const allReviews = Array.isArray(reviews) ? reviews : [];
+        if (allReviews.length > 0) {
+          const totalRating = allReviews.reduce((sum, r) => sum + parseFloat(r.rating), 0);
+          const avgRating = totalRating / allReviews.length;
+          
+          if (starsContainer) starsContainer.innerHTML = renderStars(avgRating);
+          if (averageRatingSpan) averageRatingSpan.textContent = avgRating.toFixed(1);
+          if (reviewCountSpan) reviewCountSpan.textContent = `(${allReviews.length})`;
+        } else {
+          if (starsContainer) starsContainer.innerHTML = renderStars(0);
+          if (averageRatingSpan) averageRatingSpan.textContent = 'No reviews yet';
+          if (reviewCountSpan) reviewCountSpan.textContent = '';
+        }
+      })
+      .catch(err => console.error('Error fetching live reviews:', err));
   });
 </script>
 

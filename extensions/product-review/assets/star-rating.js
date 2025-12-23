@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     reviewCountSpan.textContent = `0 reviews`;
                 }
                 if (averageRatingSpan) {
-                    averageRatingSpan.textContent = '0.0';
+                    averageRatingSpan.textContent = 'No reviews yet';
                 }
                 if (starsRenderContainer) {
                     starsRenderContainer.innerHTML = renderMainRatingStars(0);
@@ -259,6 +259,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Move modals to body on load to fix stacking context issues
+    document.querySelectorAll('.review-form-modal').forEach(modal => {
+        if (modal.parentNode !== document.body) {
+            document.body.appendChild(modal);
+        }
+    });
 
     document.querySelectorAll('.write-review-btn').forEach(button => {
         button.addEventListener('click', function () {

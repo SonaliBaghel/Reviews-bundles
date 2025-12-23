@@ -18,13 +18,13 @@
   <div class="rating-header">
     <div class="rating-left">
       <span class="rating-label">Rating</span>
-      <span class="stars-container"> {# Color will be set by JS via CSS variable #}
+      <span class="stars-container">
       </span>
       <span class="average-rating">
         {% if review_count_initial > 0 %}
           {{ avg_rating_initial }}
         {% else %}
-          0.0
+          No reviews yet
         {% endif %}
       </span>
     </div>

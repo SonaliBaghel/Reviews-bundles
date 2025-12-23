@@ -221,14 +221,14 @@ export async function calculateAndUpdateProductMetafields(
                             ownerId: productGid,
                             namespace: appConfig.metafields.namespace,
                             key: appConfig.metafields.ratingKey,
-                            value: finalAverageRating.toFixed(1),
+                            value: finalReviewCount > 0 ? finalAverageRating.toFixed(1) : null,
                             type: "number_decimal"
                         },
                         {
                             ownerId: productGid,
                             namespace: appConfig.metafields.namespace,
                             key: appConfig.metafields.countKey,
-                            value: finalReviewCount.toString(),
+                            value: finalReviewCount > 0 ? finalReviewCount.toString() : null,
                             type: "number_integer"
                         }
                     ]
