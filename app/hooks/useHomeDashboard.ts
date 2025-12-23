@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useLoaderData, useSearchParams, useNavigate, useActionData, useSubmit, useNavigation } from "@remix-run/react";
+import { useLoaderData, useSearchParams, useNavigate, useActionData, useSubmit, useNavigation, useFetcher } from "@remix-run/react";
 import { Review } from "../components/ReviewList";
 import { ProductSummary } from "../components/ProductOverviewTable";
 
@@ -39,6 +39,10 @@ export function useHomeDashboard() {
     const submit = useSubmit();
     const navigation = useNavigation();
 
+    const exportFetcher = useFetcher<ActionData>();
+    const importFetcher = useFetcher<ActionData>();
+    const sampleFetcher = useFetcher<ActionData>();
+
     const [csvFile, setCsvFile] = useState<File | null>(null);
     const [activeToast, setActiveToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
@@ -49,6 +53,9 @@ export function useHomeDashboard() {
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState('highest-rating');
 
+    const isExporting = exportFetcher.state === 'submitting';
+    const isImporting = importFetcher.state === 'submitting' || importFetcher.state === 'loading';
+    const isDownloadingSample = sampleFetcher.state === 'submitting';
     const isSubmitting = navigation.state === 'submitting';
 
     const pageCount = Math.ceil(totalReviews / reviewsPerPage);
@@ -79,14 +86,14 @@ export function useHomeDashboard() {
     const handleExportCSV = useCallback(() => {
         const formData = new FormData();
         formData.append('actionType', 'export_csv');
-        submit(formData, { method: 'post' });
-    }, [submit]);
+        exportFetcher.submit(formData, { method: 'post' });
+    }, [exportFetcher]);
 
     const handleDownloadSampleCSV = useCallback(() => {
         const formData = new FormData();
         formData.append('actionType', 'download_sample_csv');
-        submit(formData, { method: 'post' });
-    }, [submit]);
+        sampleFetcher.submit(formData, { method: 'post' });
+    }, [sampleFetcher]);
 
     const handleImportCSV = useCallback(() => {
         if (!csvFile) {
@@ -99,39 +106,60 @@ export function useHomeDashboard() {
         formData.append('actionType', 'import_csv');
         formData.append('csvFile', csvFile);
 
-        submit(formData, {
+        importFetcher.submit(formData, {
             method: 'post',
             encType: 'multipart/form-data'
         });
-    }, [csvFile, submit]);
+    }, [csvFile, importFetcher]);
 
+    // Handle Export Download
     useEffect(() => {
-        if (actionData?.csvData && actionData.fileName) {
-            const blob = new Blob([actionData.csvData], { type: 'text/csv' });
+        if (exportFetcher.data?.csvData && exportFetcher.data.fileName) {
+            const blob = new Blob([exportFetcher.data.csvData], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = actionData.fileName;
+            a.download = exportFetcher.data.fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else if (exportFetcher.data?.error) {
+            setToastMessage(exportFetcher.data.error);
+            setToastError(true);
+            setActiveToast(true);
+        }
+    }, [exportFetcher.data]);
+
+    // Handle Sample Download
+    useEffect(() => {
+        if (sampleFetcher.data?.csvData && sampleFetcher.data.fileName) {
+            const blob = new Blob([sampleFetcher.data.csvData], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = sampleFetcher.data.fileName;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         }
-    }, [actionData]);
+    }, [sampleFetcher.data]);
 
+    // Handle Import Response
     useEffect(() => {
-        if (actionData && !actionData.csvData) {
-            setToastMessage(actionData.message || actionData.error || 'Action completed.');
-            setToastError(!actionData.success);
+        if (importFetcher.data) {
+            setToastMessage(importFetcher.data.message || importFetcher.data.error || 'Import completed.');
+            setToastError(!importFetcher.data.success);
             setActiveToast(true);
 
-            if (actionData.success) {
+            if (importFetcher.data.success) {
                 setCsvFile(null);
                 const fileInput = document.getElementById('csv-file-input') as HTMLInputElement;
                 if (fileInput) fileInput.value = '';
             }
         }
-    }, [actionData]);
+    }, [importFetcher.data]);
 
     const handleTabChange = useCallback((selectedTabIndex: number) => {
         setSelectedTab(selectedTabIndex);
@@ -148,7 +176,7 @@ export function useHomeDashboard() {
         productSummaries, bundles, shopifyProducts,
         csvFile, activeToast, toastMessage, toastError,
         selectedTab, selectedBundleId, selectedProductId, sortOption,
-        isSubmitting, pageCount, hasNext, hasPrevious,
+        isSubmitting, isExporting, isImporting, isDownloadingSample, pageCount, hasNext, hasPrevious,
         handlePageChange, handleFileChange, handleRemoveFile, toggleActiveToast,
         handleExportCSV, handleDownloadSampleCSV, handleImportCSV,
         handleTabChange, handleSortChange,

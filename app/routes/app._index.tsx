@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import {
-  Page, Layout, BlockStack, Toast
+  Page, Layout, BlockStack, Toast, Button, InlineStack
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { json } from "@remix-run/react";
@@ -272,7 +273,7 @@ export default function HomePage() {
     productSummaries, bundles, shopifyProducts,
     csvFile, activeToast, toastMessage, toastError,
     selectedTab, selectedBundleId, selectedProductId, sortOption,
-    isSubmitting, pageCount, hasNext, hasPrevious,
+    isSubmitting, isExporting, isImporting, isDownloadingSample, pageCount, hasNext, hasPrevious,
     handlePageChange, handleFileChange, handleRemoveFile, toggleActiveToast,
     handleExportCSV, handleDownloadSampleCSV, handleImportCSV,
     handleTabChange, handleSortChange,
@@ -300,55 +301,62 @@ export default function HomePage() {
 
   return (
     <Page fullWidth>
-      <TitleBar title="GWL - Reviews Management Hub" />
+      <BlockStack gap="400">
+        <TitleBar title="GWL - Reviews Management Hub" />
 
-      <Layout>
-        <Layout.Section>
-          <BlockStack gap="400">
-            <StatsCard totalReviews={totalReviews} averageRating={averageRating} />
-          </BlockStack>
-        </Layout.Section>
+        <Layout>
+          <Layout.Section>
+            <BlockStack gap="400">
+              <StatsCard
+                totalReviews={totalReviews}
+                averageRating={averageRating}
+              />
+            </BlockStack>
+          </Layout.Section>
 
-        <Layout.Section>
-          <BulkManagementSection
-            isSubmitting={isSubmitting}
-            handleExportCSV={handleExportCSV}
-            csvFile={csvFile}
-            handleFileChange={handleFileChange}
-            handleRemoveFile={handleRemoveFile}
-            handleImportCSV={handleImportCSV}
-            handleDownloadSampleCSV={handleDownloadSampleCSV}
-          />
-        </Layout.Section>
+          <Layout.Section>
+            <BulkManagementSection
+              isExporting={isExporting}
+              isImporting={isImporting}
+              isDownloadingSample={isDownloadingSample}
+              handleExportCSV={handleExportCSV}
+              csvFile={csvFile}
+              handleFileChange={handleFileChange}
+              handleRemoveFile={handleRemoveFile}
+              handleImportCSV={handleImportCSV}
+              handleDownloadSampleCSV={handleDownloadSampleCSV}
+            />
+          </Layout.Section>
 
-        <Layout.Section>
-          <ReviewTabsSection
-            selectedTab={selectedTab}
-            handleTabChange={handleTabChange}
-            totalReviews={totalReviews}
-            reviews={reviews}
-            pageCount={pageCount}
-            currentPage={currentPage}
-            hasPrevious={hasPrevious}
-            hasNext={hasNext}
-            handlePageChange={handlePageChange}
-            productSummaries={productSummaries}
-            sortOptions={sortOptions}
-            sortOption={sortOption}
-            handleSortChange={handleSortChange}
-            bundles={bundles}
-            selectedBundleId={selectedBundleId}
-            setSelectedBundleId={setSelectedBundleId}
-            selectedProductId={selectedProductId}
-            setSelectedProductId={setSelectedProductId}
-            shopifyProducts={shopifyProducts}
-            getNumericProductId={getNumericProductId}
-            getGidProductId={getGidProductId}
-            getProductTitleFromNumericId={getProductTitleFromNumericId}
-            getProductImageFromNumericId={getProductImageFromNumericId}
-          />
-        </Layout.Section>
-      </Layout>
+          <Layout.Section>
+            <ReviewTabsSection
+              selectedTab={selectedTab}
+              handleTabChange={handleTabChange}
+              totalReviews={totalReviews}
+              reviews={reviews}
+              pageCount={pageCount}
+              currentPage={currentPage}
+              hasPrevious={hasPrevious}
+              hasNext={hasNext}
+              handlePageChange={handlePageChange}
+              productSummaries={productSummaries}
+              sortOptions={sortOptions}
+              sortOption={sortOption}
+              handleSortChange={handleSortChange}
+              bundles={bundles}
+              selectedBundleId={selectedBundleId}
+              setSelectedBundleId={setSelectedBundleId}
+              selectedProductId={selectedProductId}
+              setSelectedProductId={setSelectedProductId}
+              shopifyProducts={shopifyProducts}
+              getNumericProductId={getNumericProductId}
+              getGidProductId={getGidProductId}
+              getProductTitleFromNumericId={getProductTitleFromNumericId}
+              getProductImageFromNumericId={getProductImageFromNumericId}
+            />
+          </Layout.Section>
+        </Layout>
+      </BlockStack>
       {toastMarkup}
     </Page>
   );

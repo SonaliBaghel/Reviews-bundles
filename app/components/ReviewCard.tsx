@@ -15,6 +15,7 @@ import type { Review } from "./ReviewList";
 interface ReviewCardProps {
     review: Review;
     isSubmitting: boolean;
+    isStatusChanging: boolean;
     onEdit: (review: Review) => void;
     onDelete: (review: Review) => void;
     onChangeStatus: (reviewId: string, newStatus: string) => void;
@@ -23,6 +24,7 @@ interface ReviewCardProps {
 export default function ReviewCard({
     review,
     isSubmitting,
+    isStatusChanging,
     onEdit,
     onDelete,
     onChangeStatus,
@@ -110,7 +112,8 @@ export default function ReviewCard({
                                         e.stopPropagation();
                                         onChangeStatus(review.id, "approved");
                                     }}
-                                    disabled={isSubmitting}
+                                    disabled={isStatusChanging}
+                                    loading={isStatusChanging}
                                 >
                                     Approve
                                 </Button>
@@ -125,7 +128,8 @@ export default function ReviewCard({
                                     e.stopPropagation();
                                     onChangeStatus(review.id, "rejected");
                                 }}
-                                disabled={isSubmitting}
+                                disabled={isStatusChanging}
+                                loading={isStatusChanging}
                             >
                                 Reject
                             </Button>

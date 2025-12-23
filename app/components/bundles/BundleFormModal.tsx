@@ -137,12 +137,14 @@ export function BundleFormModal({
                                             </BlockStack>
                                             <InlineStack gap="200">
                                                 {isMainProduct && <Badge tone="info">Main ID</Badge>}
-                                                <Checkbox
-                                                    label=""
-                                                    labelHidden
-                                                    checked={isSelected}
-                                                    onChange={() => handleProductSelection(product.id)}
-                                                />
+                                                <div onClick={(e) => e.stopPropagation()}>
+                                                    <Checkbox
+                                                        label=""
+                                                        labelHidden
+                                                        checked={isSelected}
+                                                        onChange={() => handleProductSelection(product.id)}
+                                                    />
+                                                </div>
                                             </InlineStack>
                                         </InlineGrid>
                                     </ResourceItem>

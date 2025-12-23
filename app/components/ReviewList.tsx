@@ -46,6 +46,7 @@ export default function ReviewList({
   const localSubmit = useSubmit();
   const actualSubmit = externalSubmit || localSubmit;
   const fetcher = useFetcher();
+  const statusFetcher = useFetcher(); // Separate fetcher for status changes
 
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [deletingReview, setDeletingReview] = useState<Review | null>(null);
@@ -72,16 +73,31 @@ export default function ReviewList({
     }
   }, [fetcher.state, fetcher.data, editingReview, deletingReview, onReviewsUpdate]);
 
+  // Handle status fetcher updates
+  useEffect(() => {
+    const statusData = statusFetcher.data as any;
+    if (statusFetcher.state === "idle" && statusData) {
+      if (statusData.success) {
+        setError(null);
+        if (onReviewsUpdate) {
+          setTimeout(onReviewsUpdate, 100);
+        }
+      } else if (statusData.error) {
+        setError(statusData.error);
+      }
+    }
+  }, [statusFetcher.state, statusFetcher.data, onReviewsUpdate]);
+
   const handleChangeStatus = useCallback((reviewId: string, newStatus: string) => {
     const formData = new FormData();
     formData.append("status", newStatus);
     formData.append("actionSource", actionSource);
 
-    actualSubmit(formData, {
+    statusFetcher.submit(formData, {
       method: "post",
       action: `/app/reviews/${reviewId}/status`,
     });
-  }, [actionSource, actualSubmit]);
+  }, [actionSource, statusFetcher]);
 
   const handleEdit = useCallback((review: Review) => {
     setEditingReview(review);
@@ -158,6 +174,7 @@ export default function ReviewList({
               key={review.id}
               review={review}
               isSubmitting={fetcher.state === "submitting"}
+              isStatusChanging={statusFetcher.state === "submitting"}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onChangeStatus={handleChangeStatus}
