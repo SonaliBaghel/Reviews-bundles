@@ -26,7 +26,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const actionSource = formData.get("actionSource") as string;
 
   try {
-    const currentReview = await db.productReview.findFirst({
+    const currentReview = await (db.productReview as any).findFirst({
       where: { id: reviewId, shop },
       select: { productId: true, isBundleReview: true, bundleContext: true, status: true },
     });
@@ -108,13 +108,29 @@ async function handleDeleteReview(
 
   const uniqueProductsToUpdate = Array.from(new Set(productsToRecalculate)).filter(id => id && id !== 'undefined');
 
+  console.log(`[Review Deletion] Updating metafields for ${uniqueProductsToUpdate.length} products:`, uniqueProductsToUpdate);
+
+  const metafieldResults = [];
   for (const id of uniqueProductsToUpdate) {
-    await calculateAndUpdateProductMetafields(id, admin, shop);
+    const result = await calculateAndUpdateProductMetafields(id, admin, shop);
+    metafieldResults.push({ productId: id, ...result });
+
+    if (!result.success) {
+      console.error(`[Review Deletion] ⚠️ Metafield update failed for product ${id}:`, result.error);
+    } else {
+      console.log(`[Review Deletion] ✅ Metafield updated for product ${id}: Rating=${result.rating}, Count=${result.count}`);
+    }
   }
+
+  const allSuccessful = metafieldResults.every(r => r.success);
 
   return json({
     success: true,
-    message: "Review deleted successfully"
+    message: "Review deleted successfully",
+    metafieldUpdates: {
+      successful: allSuccessful,
+      results: metafieldResults
+    }
   });
 }
 
@@ -195,11 +211,31 @@ async function handleEditReview(
 
     const uniqueProductsToUpdate = Array.from(new Set(productsToUpdate)).filter(id => id && id !== 'undefined');
 
+    console.log(`[Review Edit] Updating metafields for ${uniqueProductsToUpdate.length} products:`, uniqueProductsToUpdate);
+
+    const metafieldResults = [];
     for (const id of uniqueProductsToUpdate) {
-      await calculateAndUpdateProductMetafields(id, admin, shop);
+      const result = await calculateAndUpdateProductMetafields(id, admin, shop);
+      metafieldResults.push({ productId: id, ...result });
+
+      if (!result.success) {
+        console.error(`[Review Edit] ⚠️ Metafield update failed for product ${id}:`, result.error);
+      } else {
+        console.log(`[Review Edit] ✅ Metafield updated for product ${id}: Rating=${result.rating}, Count=${result.count}`);
+      }
     }
 
-    return json({ success: true, message: "Review updated successfully", review: updatedReview });
+    const allSuccessful = metafieldResults.every(r => r.success);
+
+    return json({
+      success: true,
+      message: "Review updated successfully",
+      review: updatedReview,
+      metafieldUpdates: {
+        successful: allSuccessful,
+        results: metafieldResults
+      }
+    });
 
   } catch (error) {
     console.error("Error in edit transaction:", error);
