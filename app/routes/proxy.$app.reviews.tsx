@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import db from "../db.server"; 
+import db from "../db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -8,86 +8,78 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const productId = url.searchParams.get("product_id");
 
     if (!productId) {
-      return json([], { 
+      return json([], {
         status: 200,
         headers: {
           "Cache-Control": "public, max-age=60",
         }
-      }); 
+      });
     }
-    
+
     let numericProductId = productId;
     if (productId.startsWith('gid://shopify/Product/')) {
       numericProductId = productId.split('/').pop() || productId;
     }
 
-    console.log(`🔍 Fetching reviews for product: ${numericProductId}`);
-
     // --- 1. Fetch Direct Approved Reviews (Only originals) ---
     const directReviews = await db.productReview.findMany({
       where: {
-        status: 'approved', 
-        productId: numericProductId, 
-        isBundleReview: false, 
+        status: 'approved',
+        productId: numericProductId,
+        isBundleReview: false,
       },
       include: {
-        images: true, 
+        images: true,
       },
     });
-
-    console.log(` Direct reviews found: ${directReviews.length}`);
 
     // --- 2. Fetch Syndicated Approved Reviews ---
     const syndicatedBundleReviews = await db.bundleReview.findMany({
-        where: {
-            productId: numericProductId,
-            review: {
-                status: 'approved',
-            }
-        },
-        include: {
-            review: {
-                include: {
-                    images: true,
-                }
-            }
+      where: {
+        productId: numericProductId,
+        review: {
+          status: 'approved',
         }
+      },
+      include: {
+        review: {
+          include: {
+            images: true,
+          }
+        }
+      }
     });
-
-    console.log(`Syndicated reviews found: ${syndicatedBundleReviews.length}`);
 
     // --- 3. Consolidate and Deduplicate Reviews ---
     const uniqueReviewsMap = new Map();
 
     directReviews.forEach(review => {
-        uniqueReviewsMap.set(`direct-${review.id}`, {
-            ...review,
-            isSyndicated: false
-        });
+      uniqueReviewsMap.set(`direct-${review.id}`, {
+        ...review,
+        isSyndicated: false
+      });
     });
 
     syndicatedBundleReviews.forEach(bundleEntry => {
-        const uniqueKey = `syndicated-${bundleEntry.bundleProductId}-${bundleEntry.reviewId}`;
-        
-        if (!uniqueReviewsMap.has(uniqueKey)) {
-            const syndicatedReview = bundleEntry.review;
-            const syndicatedReviewForOutput = {
-                ...syndicatedReview,
-                productId: numericProductId, 
-                isSyndicated: true,
-            };
+      const uniqueKey = `syndicated-${bundleEntry.bundleProductId}-${bundleEntry.reviewId}`;
 
-            uniqueReviewsMap.set(uniqueKey, syndicatedReviewForOutput);
-        }
+      if (!uniqueReviewsMap.has(uniqueKey)) {
+        const syndicatedReview = bundleEntry.review;
+        const syndicatedReviewForOutput = {
+          ...syndicatedReview,
+          productId: numericProductId,
+          isSyndicated: true,
+        };
+
+        uniqueReviewsMap.set(uniqueKey, syndicatedReviewForOutput);
+      }
     });
 
     const allApprovedReviews = Array.from(uniqueReviewsMap.values()).sort((a: any, b: any) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return dateB - dateA;
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
     });
-
-    console.log(` Final unique reviews for ${numericProductId}:`, allApprovedReviews.length);
 
     // --- 4. Final Serialization ---
     const serializableReviews = allApprovedReviews.map((review: any) => ({
@@ -116,8 +108,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json(serializableReviews, {
       headers: {
-     
-        "Cache-Control": "public, max-age=60, s-maxage=120", 
+        "Cache-Control": "public, max-age=60, s-maxage=120",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
@@ -125,8 +116,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
   } catch (error) {
-    console.error(" Error fetching approved reviews for App Proxy:", error);
-    return json([], { 
+    return json([], {
       status: 500,
       headers: {
         "Cache-Control": "no-cache, no-store, must-revalidate",

@@ -1,0 +1,49 @@
+<div id="review-form-modal-{{ product.id }}" class="review-form-modal" style="display:none;">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <button class="close-modal">&times;</button>
+    <h3>{{ 'ratings.reviews.write' | t }}</h3>
+    <form class="review-form" data-product-id="{{ product.id }}">
+      <div class="form-group">
+        <label>{{ 'ratings.reviews.your_rating' | t }}</label>
+        <div class="star-rating-input">
+          {% for i in (1..5) %}
+            <input type="radio" id="star{{ i }}-{{ product.id }}" name="rating" value="{{ i }}" required>
+            <label for="star{{ i }}-{{ product.id }}">★</label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="name-{{ product.id }}">{{ 'ratings.reviews.your_name' | t }}</label>
+        <input type="text" id="name-{{ product.id }}" name="name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email-{{ product.id }}">{{ 'ratings.reviews.your_email' | t }}</label>
+        <input type="email" id="email-{{ product.id }}" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="title-{{ product.id }}">{{ 'ratings.reviews.review_title' | t }}</label>
+        <input type="text" id="title-{{ product.id }}" name="title">
+      </div>
+
+      <div class="form-group">
+        <label for="content-{{ product.id }}">{{ 'ratings.reviews.your_review' | t }}</label>
+        <textarea id="content-{{ product.id }}" name="content" required></textarea>
+      </div>
+
+      <div class="form-group">
+          <label for="image-upload-{{ product.id }}">Upload Images (Optional)</label>
+          <input type="file" id="image-upload-{{ product.id }}" name="images" accept="image/jpeg,image/png,image/gif" multiple>
+          <small class="form-help-text">Max 5 images. Each max 2MB. JPG, PNG, GIF only.</small>
+          <div id="image-preview-{{ product.id }}" class="image-preview"></div>
+      </div>
+
+      <button type="submit" class="submit-review">
+        {{ 'ratings.reviews.submit' | t }}
+      </button>
+    </form>
+  </div>
+</div>

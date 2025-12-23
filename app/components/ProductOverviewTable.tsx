@@ -15,7 +15,8 @@ import {
 import { useCallback, useState } from 'react';
 import { StarFilledIcon } from "@shopify/polaris-icons";
 import { useSubmit } from '@remix-run/react';
-
+import APP_CONFIG from '../app.config';
+import { RATING_BADGE_TONE_MAP } from '../utils/constants';
 import ReviewList, { Review } from './ReviewList';
 
 export interface ProductSummary {
@@ -32,8 +33,8 @@ interface ProductOverviewTableProps {
   actionSource?: 'bundle' | 'individual';
 }
 
-export default function ProductOverviewTable({ 
-  productSummaries, 
+export default function ProductOverviewTable({
+  productSummaries,
   actionSource = 'individual'
 }: ProductOverviewTableProps) {
   const [activeModal, setActiveModal] = useState(false);
@@ -52,18 +53,6 @@ export default function ProductOverviewTable({
     setSelectedProductReviews([]);
     setSelectedProductName('');
   }, []);
-
-  const defaultPlaceholderImageUrl = (text: string) => 
-    `https://placehold.co/80x80/f6f6f7/6d7175?text=${encodeURIComponent(text)}`;
-
-  const getRatingTone = (rating: string) => {
-    const numRating = parseFloat(rating);
-    if (numRating >= 4.5) return "success";
-    if (numRating >= 4.0) return "success";
-    if (numRating >= 3.0) return "warning";
-    if (numRating >= 2.0) return "critical";
-    return "critical";
-  };
 
   const getPendingReviewsCount = (reviews: Review[]) => {
     return reviews.filter(review => review.status === 'pending').length;
@@ -87,7 +76,7 @@ export default function ProductOverviewTable({
                   media={
                     <Box paddingInlineEnd="200">
                       <Thumbnail
-                        source={productImageUrl || defaultPlaceholderImageUrl(productName.split(' ')[0])}
+                        source={productImageUrl || APP_CONFIG.IMAGES.getPlaceholderUrl(productName.split(' ')[0])}
                         alt={`Image of ${productName}`}
                         size="medium"
                       />
@@ -123,23 +112,18 @@ export default function ProductOverviewTable({
                               •
                             </Text>
                             <Badge tone="attention" size="small">
-                              {pendingReviewsCount} pending
+                              {`${pendingReviewsCount} pending`}
                             </Badge>
                           </>
                         )}
                       </InlineStack>
                     </BlockStack>
-                    
-                    <Badge 
-                      tone={getRatingTone(averageRating)}
+
+                    <Badge
+                      tone={RATING_BADGE_TONE_MAP.getByRating(parseFloat(averageRating)) as any}
                       size="large"
                     >
-                      <InlineStack gap="100" blockAlign="center">
-                        <Icon source={StarFilledIcon} />
-                        <Text as="span" variant="bodyMd">
-                          {averageRating}
-                        </Text>
-                      </InlineStack>
+                      {averageRating}
                     </Badge>
                   </InlineGrid>
                 </ResourceItem>
@@ -151,8 +135,8 @@ export default function ProductOverviewTable({
         <Card padding="600">
           <Box paddingBlockStart="400" paddingBlockEnd="400">
             <BlockStack gap="400" align="center">
-              <div style={{ 
-                background: 'var(--p-color-bg-fill-tertiary)', 
+              <div style={{
+                background: 'var(--p-color-bg-fill-tertiary)',
                 borderRadius: 'var(--p-border-radius-400)',
                 padding: 'var(--p-space-400)',
                 marginBottom: 'var(--p-space-200)'
@@ -186,7 +170,7 @@ export default function ProductOverviewTable({
             </InlineStack>
             {selectedProductReviews.length > 0 && (
               <Badge tone="attention">
-                {getPendingReviewsCount(selectedProductReviews)} pending
+                {`${getPendingReviewsCount(selectedProductReviews)} pending`}
               </Badge>
             )}
           </InlineStack>
@@ -200,8 +184,8 @@ export default function ProductOverviewTable({
         <Modal.Section>
           <BlockStack gap="400">
             {selectedProductReviews.length > 0 ? (
-              <ReviewList 
-                reviews={selectedProductReviews} 
+              <ReviewList
+                reviews={selectedProductReviews}
                 externalSubmit={submit}
                 onReviewsUpdate={handleModalClose}
                 actionSource={actionSource}
@@ -210,8 +194,8 @@ export default function ProductOverviewTable({
               <Card padding="600">
                 <Box paddingBlockStart="400" paddingBlockEnd="400">
                   <BlockStack gap="400" align="center">
-                    <div style={{ 
-                      background: 'var(--p-color-bg-fill-tertiary)', 
+                    <div style={{
+                      background: 'var(--p-color-bg-fill-tertiary)',
                       borderRadius: 'var(--p-border-radius-400)',
                       padding: 'var(--p-space-400)',
                       marginBottom: 'var(--p-space-200)'

@@ -31,6 +31,7 @@ model Session {
 
 model ProductReview {
   id                   String              @id @default(uuid())
+  shop                 String
   productId            String
   rating               Int
   author               String
@@ -47,6 +48,8 @@ model ProductReview {
   syndicatedCopies     ReviewSyndication[] @relation("SyndicatedReview")
   bundleReviews        BundleReview[]
   images               ReviewImage[]
+
+  @@index([shop])
 
   @@index([deletedAt])
   @@index([productId])
@@ -86,12 +89,14 @@ model BundleReview {
 
 model ReviewBundle {
   id              String   @id @default(uuid())
-  name            String   @unique
+  shop            String
+  name            String
   bundleProductId String   @unique
   productIds      String   @db.Text
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@index([shop])
   @@index([bundleProductId])
   @@map("review_bundles")
 }
@@ -115,6 +120,7 @@ model ReviewSyndication {
 
 model AppSettings {
   id                    String   @id @default(uuid())
+  shop                  String   @unique
   starColor             String   @default("#FFD700")
   backgroundColor       String   @default("#F9F9F9")
   headingColor          String   @default("#222222")
@@ -158,5 +164,6 @@ model AppSettings {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
+  @@index([shop])
   @@map("app_settings")
 }

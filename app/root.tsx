@@ -5,16 +5,17 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import { AppProvider as PolarisAppProvider, Frame } from "@shopify/polaris"; 
+import { AppProvider as PolarisAppProvider, Frame } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
 import "@shopify/polaris/build/esm/styles.css";
+import APP_CONFIG from "./app.config";
 
 export function links() {
   return [
-    { rel: "preconnect", href: "https://cdn.shopify.com/" },
+    { rel: "preconnect", href: APP_CONFIG.SHOPIFY.CDN_BASE_URL },
     {
       rel: "stylesheet",
-      href: "https://cdn.shopify.com/static/fonts/inter/v4/styles.css",
+      href: APP_CONFIG.SHOPIFY.FONTS_URL,
     },
   ];
 }
@@ -30,9 +31,9 @@ export default function App() {
       </head>
       <body>
         <PolarisAppProvider i18n={enTranslations}>
-     
+
           <Frame>
-            <Outlet /> 
+            <Outlet />
           </Frame>
         </PolarisAppProvider>
 
