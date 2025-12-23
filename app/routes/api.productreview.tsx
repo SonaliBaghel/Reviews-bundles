@@ -351,12 +351,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         return json({ error: "Invalid Product ID format" }, { status: 400 });
       }
 
-      const directReviews = await (prisma.productReview as any).findMany({
+      const allApprovedReviews = await (prisma.productReview as any).findMany({
         where: {
           shop,
           productId,
           status: "approved",
-          isBundleReview: false
         },
         orderBy: { createdAt: "desc" },
         include: {
@@ -367,53 +366,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         }
       });
 
-      const syndicatedReviews = await (prisma.bundleReview as any).findMany({
-        where: {
-          productId: productId,
-          review: {
-            shop,
-            status: "approved",
-          }
-        },
-        include: {
-          review: {
-            include: {
-              images: {
-                select: { id: true, url: true, altText: true, order: true },
-                orderBy: { order: 'asc' }
-              }
-            }
-          }
-        }
-      });
-
-      const uniqueReviewsMap = new Map();
-
-      directReviews.forEach((review: any) => {
-        uniqueReviewsMap.set(`direct-${review.id}`, {
-          ...review,
-          isSyndicated: false
-        });
-      });
-
-      syndicatedReviews.forEach((bundleEntry: any) => {
-        const uniqueKey = `syndicated-${bundleEntry.bundleProductId}-${bundleEntry.reviewId}`;
-
-        if (!uniqueReviewsMap.has(uniqueKey)) {
-          const syndicatedReview = bundleEntry.review;
-          uniqueReviewsMap.set(uniqueKey, {
-            ...syndicatedReview,
-            productId: productId,
-            isSyndicated: true,
-          });
-        }
-      });
-
-      const allReviews = Array.from(uniqueReviewsMap.values());
-      const serializableReviews = allReviews.map((review: any) => ({
+      const serializableReviews = allApprovedReviews.map((review: any) => ({
         ...review,
         createdAt: review.createdAt.toISOString(),
         updatedAt: review.updatedAt.toISOString(),
+        isSyndicated: review.isBundleReview || false,
         images: review.images.map((image: any) => ({
           ...image,
         }))

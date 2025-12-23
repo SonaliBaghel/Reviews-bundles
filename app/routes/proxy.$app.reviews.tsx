@@ -21,68 +21,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
       numericProductId = productId.split('/').pop() || productId;
     }
 
-    // --- 1. Fetch Direct Approved Reviews (Only originals) ---
-    const directReviews = await db.productReview.findMany({
+    // --- 1. Fetch All Approved Reviews for this Product (Direct + Syndicated) ---
+    const allApprovedReviews = await db.productReview.findMany({
       where: {
         status: 'approved',
         productId: numericProductId,
-        isBundleReview: false,
       },
       include: {
         images: true,
       },
-    });
-
-    // --- 2. Fetch Syndicated Approved Reviews ---
-    const syndicatedBundleReviews = await db.bundleReview.findMany({
-      where: {
-        productId: numericProductId,
-        review: {
-          status: 'approved',
-        }
-      },
-      include: {
-        review: {
-          include: {
-            images: true,
-          }
-        }
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
-    // --- 3. Consolidate and Deduplicate Reviews ---
-    const uniqueReviewsMap = new Map();
-
-    directReviews.forEach(review => {
-      uniqueReviewsMap.set(`direct-${review.id}`, {
-        ...review,
-        isSyndicated: false
-      });
-    });
-
-    syndicatedBundleReviews.forEach(bundleEntry => {
-      const uniqueKey = `syndicated-${bundleEntry.bundleProductId}-${bundleEntry.reviewId}`;
-
-      if (!uniqueReviewsMap.has(uniqueKey)) {
-        const syndicatedReview = bundleEntry.review;
-        const syndicatedReviewForOutput = {
-          ...syndicatedReview,
-          productId: numericProductId,
-          isSyndicated: true,
-        };
-
-        uniqueReviewsMap.set(uniqueKey, syndicatedReviewForOutput);
-      }
-    });
-
-    const allApprovedReviews = Array.from(uniqueReviewsMap.values()).sort((a: any, b: any) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return dateB - dateA;
-    });
-
-    // --- 4. Final Serialization ---
+    // --- 2. Consolidate and Deduplicate Reviews ---
+    // Since we now fetch all reviews for this product directly, we just need to mark which ones are syndicated
     const serializableReviews = allApprovedReviews.map((review: any) => ({
+      ...review,
+      isSyndicated: review.isBundleReview || false,
+    }));
+
+    // --- 3. Final Serialization ---
+    const finalReviews = serializableReviews.map((review: any) => ({
       id: review.id,
       productId: review.productId,
       rating: review.rating,
@@ -106,7 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       updatedAt: (review.updatedAt instanceof Date ? review.updatedAt.toISOString() : review.updatedAt),
     }));
 
-    return json(serializableReviews, {
+    return json(finalReviews, {
       headers: {
         "Cache-Control": "public, max-age=60, s-maxage=120",
         "Access-Control-Allow-Origin": "*",

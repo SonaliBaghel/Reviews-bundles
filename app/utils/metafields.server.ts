@@ -148,52 +148,21 @@ export async function calculateAndUpdateProductMetafields(
     try {
         logger.info(`[Metafield Update] Starting update for product ${productNumericId} on shop ${shop}`);
 
-        // 1. Fetch direct approved reviews
-        const directApprovedReviews = await (db.productReview as any).findMany({
+        // 1. Fetch all approved reviews for this product (direct + syndicated)
+        const approvedReviews = await (db.productReview as any).findMany({
             where: {
                 shop,
                 productId: productNumericId,
                 status: 'approved',
-                isBundleReview: false,
             },
             select: { id: true, rating: true },
         });
 
-        logger.info(`[Metafield Update] Found ${directApprovedReviews.length} direct approved reviews for product ${productNumericId}`);
+        logger.info(`[Metafield Update] Found ${approvedReviews.length} approved reviews for product ${productNumericId}`);
 
-        // 2. Fetch syndicated approved reviews
-        const syndicatedReviews = await (db.bundleReview as any).findMany({
-            where: {
-                productId: productNumericId,
-                review: {
-                    shop,
-                    status: 'approved',
-                }
-            },
-            select: {
-                reviewId: true,
-                review: { select: { rating: true } },
-                bundleProductId: true
-            }
-        });
-
-        logger.info(`[Metafield Update] Found ${syndicatedReviews.length} syndicated approved reviews for product ${productNumericId}`);
-
-        // 3. Consolidate into a unique map to avoid double counting
-        const ratingMap = new Map<string, number>();
-
-        directApprovedReviews.forEach((review: any) => {
-            ratingMap.set(`direct-${review.id}`, review.rating);
-        });
-
-        syndicatedReviews.forEach((bundleReview: any) => {
-            ratingMap.set(`syndicated-${bundleReview.bundleProductId}-${bundleReview.reviewId}`,
-                bundleReview.review.rating);
-        });
-
-        // 4. Calculate final stats
-        const finalReviewCount = ratingMap.size;
-        const totalRatingSum = Array.from(ratingMap.values()).reduce((sum, rating) => sum + rating, 0);
+        // 2. Calculate final stats
+        const finalReviewCount = approvedReviews.length;
+        const totalRatingSum = approvedReviews.reduce((sum: number, review: any) => sum + review.rating, 0);
         const finalAverageRating = finalReviewCount > 0 ? (totalRatingSum / finalReviewCount) : 0;
 
         const productGid = `gid://shopify/Product/${productNumericId}`;

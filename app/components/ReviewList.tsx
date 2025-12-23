@@ -93,6 +93,8 @@ export default function ReviewList({
     formData.append("status", newStatus);
     formData.append("actionSource", actionSource);
 
+    formData.append("reviewId", reviewId);
+
     statusFetcher.submit(formData, {
       method: "post",
       action: `/app/reviews/${reviewId}/status`,
@@ -114,6 +116,8 @@ export default function ReviewList({
 
     formData.append("actionSource", actionSource);
 
+    formData.append("reviewId", editingReview.id);
+
     fetcher.submit(formData, {
       method: "post",
       action: `/app/reviews/${editingReview.id}/actions`,
@@ -126,6 +130,8 @@ export default function ReviewList({
     const formData = new FormData();
     formData.append("intent", "delete");
     formData.append("actionSource", actionSource);
+
+    formData.append("reviewId", deletingReview.id);
 
     fetcher.submit(formData, {
       method: "post",
@@ -173,8 +179,8 @@ export default function ReviewList({
             <ReviewCard
               key={review.id}
               review={review}
-              isSubmitting={fetcher.state === "submitting"}
-              isStatusChanging={statusFetcher.state === "submitting"}
+              isSubmitting={fetcher.state !== "idle" && fetcher.formData?.get("reviewId") === review.id}
+              isStatusChanging={statusFetcher.state !== "idle" && statusFetcher.formData?.get("reviewId") === review.id}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onChangeStatus={handleChangeStatus}
