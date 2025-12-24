@@ -90,13 +90,13 @@ async function verifyMetafieldValues(
         logger.info(`[Metafield Verification] Verifying metafields for product ${productGid}`);
 
         const response = await admin.graphql(`
-            query GetProductMetafields($id: ID!, $namespace: String!) {
+            query GetProductMetafields($id: ID!, $namespace: String!, $countKey: String!) {
                 product(id: $id) {
                     id
                     rating: metafield(namespace: $namespace, key: "rating") {
                         value
                     }
-                    reviewCount: metafield(namespace: $namespace, key: "review_count") {
+                    reviewCount: metafield(namespace: $namespace, key: $countKey) {
                         value
                     }
                 }
@@ -104,7 +104,8 @@ async function verifyMetafieldValues(
         `, {
             variables: {
                 id: productGid,
-                namespace: appConfig.metafields.namespace
+                namespace: appConfig.metafields.namespace,
+                countKey: appConfig.metafields.countKey
             }
         });
 

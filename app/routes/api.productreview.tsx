@@ -42,6 +42,7 @@ async function uploadImageToShopify(base64ImageData: string, shopDomain: string)
 
     const matches = base64ImageData.match(/^data:(image\/(png|jpe?g|gif));base64,(.+)$/i);
     if (!matches) {
+      console.error("Image upload failed: Invalid base64 format");
       return null;
     }
 
@@ -51,11 +52,14 @@ async function uploadImageToShopify(base64ImageData: string, shopDomain: string)
     const imageBuffer = Buffer.from(imageData, 'base64');
 
     if (imageBuffer.length > maxSize) {
+      console.error(`Image upload failed: File size ${imageBuffer.length} exceeds max size ${maxSize}`);
       return null;
     }
 
-    const stagedResponse = await admin.graphql(
-      `#graphql
+    const filename = `review-image-${Date.now()}.${fileExtension}`;
+
+    // 1. Request staged upload targets
+    const stagedUploadsResponse = await admin.graphql(`
       mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
         stagedUploadsCreate(input: $input) {
           stagedTargets {
@@ -71,125 +75,152 @@ async function uploadImageToShopify(base64ImageData: string, shopDomain: string)
             message
           }
         }
-      }`,
-      {
-        variables: {
-          input: [{
-            resource: "FILE",
-            filename: `review-${Date.now()}.${fileExtension}`,
-            mimeType: contentType,
-            httpMethod: "POST"
-          }]
-        }
       }
-    );
+    `, {
+      variables: {
+        input: [{
+          filename,
+          mimeType: contentType,
+          resource: 'FILE',
+          fileSize: imageBuffer.length.toString(),
+        }]
+      }
+    });
 
-    const stagedResult: FileCreateResponse = await stagedResponse.json();
+    const stagedUploadsResult = await stagedUploadsResponse.json() as FileCreateResponse;
 
-    if (stagedResult.errors?.length || stagedResult.data?.stagedUploadsCreate?.userErrors?.length) {
-      return null;
+    if (stagedUploadsResult.errors) {
+      console.error("GraphQL errors in stagedUploadsCreate:", stagedUploadsResult.errors);
     }
 
-    const target = stagedResult.data?.stagedUploadsCreate?.stagedTargets?.[0];
+    const target = stagedUploadsResult.data?.stagedUploadsCreate?.stagedTargets[0];
+
     if (!target) {
+      console.error("Image upload failed: Could not create staged upload target", JSON.stringify(stagedUploadsResult.data?.stagedUploadsCreate?.userErrors));
       return null;
     }
 
-    const formData = new FormData();
-    target.parameters.forEach(({ name, value }) => {
-      formData.append(name, value);
-    });
-    formData.append('file', new Blob([imageBuffer], { type: contentType }), `review-${Date.now()}.${fileExtension}`);
+    // 2. Upload the image buffer to the provided URL
+    // Logic for GCS vs S3/Other:
+    // If the URL has a query string (like X-Goog-Signature), it's a signed URL for PUT.
+    // Otherwise, use POST with parameters in FormData.
+    const isSignedUrl = target.url.includes('?');
 
-    const uploadResponse = await fetch(target.url, {
-      method: 'POST',
-      body: formData
-    });
+    if (isSignedUrl) {
+      const uploadResponse = await fetch(target.url, {
+        method: 'PUT',
+        body: imageBuffer,
+        headers: {
+          'Content-Type': contentType,
+        },
+      });
 
-    if (!uploadResponse.ok) {
-      return null;
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error(`Image upload failed: Could not upload to staged target (PUT). Status: ${uploadResponse.status}, Error: ${errorText}`);
+        return null;
+      }
+    } else {
+      const formData = new FormData();
+
+      target.parameters.forEach(({ name, value }) => {
+        formData.append(name, value);
+      });
+
+      const blob = new Blob([imageBuffer], { type: contentType });
+      formData.append('file', blob, filename);
+
+      const uploadResponse = await fetch(target.url, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error(`Image upload failed: Could not upload to staged target (POST). Status: ${uploadResponse.status}, Error: ${errorText}`);
+        return null;
+      }
     }
 
-    const fileCreateResponse = await admin.graphql(
-      `#graphql
+    // 3. Create the file in Shopify
+    const fileCreateResponse = await admin.graphql(`
       mutation fileCreate($files: [FileCreateInput!]!) {
         fileCreate(files: $files) {
           files {
-            fileStatus
             id
-            ... on MediaImage {
-              image {
-                originalSrc
-                url
-              }
-            }
+            fileStatus
           }
           userErrors {
             field
             message
           }
         }
-      }`,
-      {
-        variables: {
-          files: [{
-            alt: "Product review image",
-            contentType: "IMAGE",
-            originalSource: target.resourceUrl
-          }]
-        }
       }
-    );
+    `, {
+      variables: {
+        files: [{
+          alt: "Review Image",
+          contentType: 'IMAGE',
+          originalSource: target.resourceUrl,
+        }]
+      }
+    });
 
-    const fileCreateResult: FileCreateResponse = await fileCreateResponse.json();
+    const fileCreateResult = await fileCreateResponse.json() as FileCreateResponse;
+    const file = fileCreateResult.data?.fileCreate?.files[0];
 
-    if (fileCreateResult.errors?.length || fileCreateResult.data?.fileCreate?.userErrors?.length) {
-      return null;
-    }
-
-    let file = fileCreateResult.data?.fileCreate?.files?.[0];
     if (!file || !file.id) {
+      console.error("Image upload failed: Could not create file in Shopify", JSON.stringify(fileCreateResult.data?.fileCreate?.userErrors));
       return null;
     }
 
+    // 4. Poll for the file status
     for (let i = 0; i < uploadRetries; i++) {
       await sleep(retryDelayMs);
 
       const fileStatusResponse = await admin.graphql(`
-          #graphql
-          query getFileStatus($id: ID!) {
-              node(id: $id) {
-                  ... on MediaImage {
-                      id
-                      fileStatus
-                      image {
-                          originalSrc
-                          url
-                      }
-                  }
+        query getFileStatus($id: ID!) {
+          node(id: $id) {
+            ... on GenericFile {
+              fileStatus
+              url
+            }
+            ... on MediaImage {
+              fileStatus
+              image {
+                originalSrc
+                url
               }
+            }
           }
+        }
       `, {
         variables: { id: file.id }
       });
 
-      const statusResult = await fileStatusResponse.json() as { data?: { node?: { fileStatus: string, image?: { originalSrc: string, url: string } } }, errors?: any[] };
+      const statusResult = await fileStatusResponse.json() as { data?: { node?: { fileStatus: string, image?: { originalSrc: string, url: string }, url?: string } }, errors?: any[] };
 
       if (statusResult.errors?.length) {
+        console.error("Image upload failed: Error polling file status", JSON.stringify(statusResult.errors));
         break;
       }
 
       const updatedFile = statusResult.data?.node;
-      if (updatedFile && updatedFile.fileStatus === 'READY' && updatedFile.image?.originalSrc) {
-        return updatedFile.image.originalSrc;
+
+      if (updatedFile && updatedFile.fileStatus === 'READY') {
+        const finalUrl = updatedFile.image?.originalSrc || updatedFile.url || null;
+        return finalUrl;
       } else if (updatedFile && (updatedFile.fileStatus === 'FAILED' || updatedFile.fileStatus === 'ERROR')) {
+        console.error("Image upload failed: File status is FAILED or ERROR");
         return null;
       }
     }
 
+    console.error("Image upload failed: Polling timed out");
     return null;
 
   } catch (error: any) {
+    console.error("Image upload failed: Unexpected error", error);
     return null;
   }
 }
@@ -256,11 +287,11 @@ export async function action({ request }: ActionFunctionArgs) {
         { status: 400 }
       );
     }
-    const imagesToCreate: { url: string; altText?: string; order?: number }[] = [];
 
+    const imagesToCreate: { url: string; altText?: string; order?: number }[] = [];
     const imagesToProcess = Array.isArray(base64Images) ? base64Images.slice(0, appConfig.images.maxCount) : [];
 
-    if (imagesToProcess.length > 0 && shopDomain) {
+    if (imagesToProcess.length > 0) {
       for (let i = 0; i < imagesToProcess.length; i++) {
         const base64Image = imagesToProcess[i];
         if (typeof base64Image === 'string') {
@@ -295,15 +326,10 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 
     try {
-      const url = new URL(request.url);
-      const shopDomainForMetafield = url.searchParams.get("shop");
-
-      if (shopDomainForMetafield) {
-        const { admin } = await shopify.unauthenticated.admin(shopDomainForMetafield);
-        await calculateAndUpdateProductMetafields(productId, admin, shopDomain);
-      }
+      const { admin } = await shopify.unauthenticated.admin(shopDomain);
+      await calculateAndUpdateProductMetafields(productId, admin, shopDomain);
     } catch (metafieldError: any) {
-      // Silently fail for metafield updates
+      console.error("Metafield update failed:", metafieldError);
     }
 
     return new Response(
@@ -319,6 +345,7 @@ export async function action({ request }: ActionFunctionArgs) {
       { status: 201 }
     );
   } catch (error: any) {
+    console.error("Action failed:", error);
     return new Response(
       JSON.stringify({
         error: "Failed to submit review. Please try again."
@@ -336,19 +363,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const url = new URL(request.url);
     const shop = url.searchParams.get("shop");
+    let productId = url.searchParams.get("productId");
 
     if (!shop) {
       return json({ error: "Missing shop parameter" }, { status: 400 });
     }
-    let productId = url.searchParams.get("productId");
 
     if (productId) {
       if (typeof productId === 'string' && productId.startsWith('gid://shopify/Product/')) {
         productId = productId.split('/').pop() || '';
-      }
-
-      if (!/^\d+$/.test(productId)) {
-        return json({ error: "Invalid Product ID format" }, { status: 400 });
       }
 
       const allApprovedReviews = await (prisma.productReview as any).findMany({
