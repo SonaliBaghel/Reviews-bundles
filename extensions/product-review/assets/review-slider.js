@@ -97,19 +97,20 @@ document.addEventListener('DOMContentLoaded', function () {
         // Default (Extra large screens) - Up to 6 cards
         sliderBlock.style.setProperty('--card-width', `calc((100% - (${gap}px * ${cardsPerPage - 1}) - 2px) / ${cardsPerPage})`);
 
-        // Large screens (max 5 cards)
-        const cardsLg = Math.min(cardsPerPage, 5);
+        // Large screens - Allow up to 6 cards if configured, otherwise cap at 5 for layout safety
+        // If user wants 6, let them have 6 even on large screens if they fit
+        const cardsLg = Math.min(cardsPerPage, 6);
         sliderBlock.style.setProperty('--card-width-lg', `calc((100% - (${gap}px * ${cardsLg - 1}) - 2px) / ${cardsLg})`);
 
-        // Medium screens (max 4 cards)
-        const cardsMd = Math.min(cardsPerPage, 4);
+        // Medium screens - Allow up to 5 cards if configured
+        const cardsMd = Math.min(cardsPerPage, 5);
         sliderBlock.style.setProperty('--card-width-md', `calc((100% - (${gap}px * ${cardsMd - 1}) - 2px) / ${cardsMd})`);
 
-        // Small screens (max 3 cards)
-        const cardsSm = Math.min(cardsPerPage, 3);
+        // Small screens - Allow up to 4 cards if configured
+        const cardsSm = Math.min(cardsPerPage, 4);
         sliderBlock.style.setProperty('--card-width-sm', `calc((100% - (${gap}px * ${cardsSm - 1}) - 2px) / ${cardsSm})`);
 
-        // Extra small screens (max 2 cards)
+        // Extra small screens - Allow up to 2 cards
         const cardsXs = Math.min(cardsPerPage, 2);
         sliderBlock.style.setProperty('--card-width-xs', `calc((100% - (${gap}px * ${cardsXs - 1}) - 2px) / ${cardsXs})`);
     };
