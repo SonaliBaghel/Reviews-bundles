@@ -100,8 +100,8 @@
 .reviews-container {
     margin-top: 1rem;
     display: block;
-  width:auto;
-   
+    width: auto;
+
 }
 
 .reviews-list {
@@ -327,7 +327,8 @@
     padding: 0.8rem;
     border: 1px solid #ddd;
     border-radius: 6px;
-    font-size: 0.95rem;
+    font-size: 16px;
+    /* Fix iOS zoom issue */
 }
 
 .form-group textarea {
@@ -418,6 +419,8 @@
     border: 1px dashed #ddd;
     border-radius: 8px;
     padding: 5px;
+    margin-bottom: 1rem;
+    /* Add space before submit button */
 }
 
 .image-preview-item {

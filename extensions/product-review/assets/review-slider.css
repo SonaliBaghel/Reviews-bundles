@@ -238,8 +238,8 @@
 }
 
 .review-card {
-  flex: 0 0 calc(var(--card-width) - 20px);
-  margin: 0 10px;
+  flex: 0 0 var(--card-width);
+  margin: 0;
   background: var(--review-card-bg, #ffffff);
   border-radius: 12px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);

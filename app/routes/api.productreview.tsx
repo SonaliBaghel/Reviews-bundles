@@ -292,15 +292,20 @@ export async function action({ request }: ActionFunctionArgs) {
     const imagesToProcess = Array.isArray(base64Images) ? base64Images.slice(0, appConfig.images.maxCount) : [];
 
     if (imagesToProcess.length > 0) {
-      for (let i = 0; i < imagesToProcess.length; i++) {
-        const base64Image = imagesToProcess[i];
+      const uploadPromises = imagesToProcess.map(async (base64Image, i) => {
         if (typeof base64Image === 'string') {
           const imageUrl = await uploadImageToShopify(base64Image, shopDomain);
           if (imageUrl) {
-            imagesToCreate.push({ url: imageUrl, altText: `Review image ${i + 1}`, order: i });
+            return { url: imageUrl, altText: `Review image ${i + 1}`, order: i };
           }
         }
-      }
+        return null;
+      });
+
+      const uploadedImages = await Promise.all(uploadPromises);
+      uploadedImages.forEach(img => {
+        if (img) imagesToCreate.push(img);
+      });
     }
 
     const review = await (prisma.productReview as any).create({

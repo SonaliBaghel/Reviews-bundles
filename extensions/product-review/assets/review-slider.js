@@ -92,10 +92,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const updateCardWidths = () => {
         const root = document.documentElement;
-        root.style.setProperty('--card-width', `${100 / cardsPerPage}%`);
-        root.style.setProperty('--card-width-md', `${100 / Math.min(cardsPerPage, 4)}%`);
-        root.style.setProperty('--card-width-sm', `${100 / Math.min(cardsPerPage, 3)}%`);
-        root.style.setProperty('--card-width-xs', `${100 / Math.min(cardsPerPage, 2)}%`);
+        const gap = spaceBetween || 20;
+        root.style.setProperty('--card-width', `calc((100% - (${gap}px * ${cardsPerPage - 1})) / ${cardsPerPage})`);
+        root.style.setProperty('--card-width-md', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 4) - 1})) / ${Math.min(cardsPerPage, 4)})`);
+        root.style.setProperty('--card-width-sm', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 3) - 1})) / ${Math.min(cardsPerPage, 3)})`);
+        root.style.setProperty('--card-width-xs', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 2) - 1})) / ${Math.min(cardsPerPage, 2)})`);
     };
 
     function applySettingsToCss(settings) {

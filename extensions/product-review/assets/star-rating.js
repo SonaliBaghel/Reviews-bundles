@@ -283,10 +283,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.close-modal, .modal-overlay').forEach(element => {
+    document.querySelectorAll('.close-modal, .modal-overlay, .close-submission-modal, .ok-submission-btn').forEach(element => {
         element.addEventListener('click', function () {
-            this.closest('.review-form-modal').style.display = 'none';
-            document.body.style.overflow = '';
+            const modal = this.closest('.review-form-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+
+                // If it was the submission success modal, reload the page or reviews
+                if (modal.id === 'submission-message-modal') {
+                    window.location.reload();
+                }
+            }
         });
     });
 
@@ -417,18 +425,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             try {
                 const formData = new FormData(this);
-                const base64Images = [];
 
-                for (let i = 0; i < Math.min(selectedFiles.length, MAX_IMAGES_ALLOWED); i++) {
-                    const file = selectedFiles[i];
-                    const reader = new FileReader();
-                    const base64Data = await new Promise((resolve, reject) => {
+                // Parallel base64 conversion
+                const base64Promises = selectedFiles.slice(0, MAX_IMAGES_ALLOWED).map(file => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
                         reader.onloadend = () => resolve(reader.result);
                         reader.onerror = reject;
                         reader.readAsDataURL(file);
                     });
-                    base64Images.push(base64Data);
-                }
+                });
+                const base64Images = await Promise.all(base64Promises);
 
                 const response = await fetch('/apps/productreview/api/productreview', {
                     method: 'POST',
@@ -457,15 +464,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 const result = await response.json();
                 submitBtn.textContent = 'Submitted! Thank you.';
 
+                // Hide the form modal
                 const reviewFormModal = document.getElementById(`review-form-modal-${currentProductId}`);
                 if (reviewFormModal) {
                     reviewFormModal.style.display = 'none';
                 }
 
+                // Show the success modal
                 if (submissionMessageModal) {
                     submissionMessageModal.style.display = 'flex';
                     document.body.style.overflow = 'hidden';
                 }
+
+                // Reset form
+                this.reset();
+                selectedFiles = [];
+                renderPreview();
                 form.reset();
                 selectedFiles = [];
                 renderImagePreviews();
