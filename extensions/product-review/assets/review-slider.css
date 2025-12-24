@@ -643,15 +643,15 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 1600px) {
+@media (max-width: 1400px) {
   .review-card {
-    flex: 0 0 var(--card-width-md);
+    flex: 0 0 var(--card-width-lg);
   }
 }
 
 @media (max-width: 1200px) {
   .review-card {
-    flex: 0 0 var(--card-width-sm);
+    flex: 0 0 var(--card-width-md);
   }
 
   .review-grid {
@@ -665,7 +665,7 @@
 
 @media (max-width: 992px) {
   .review-card {
-    flex: 0 0 var(--card-width-xs);
+    flex: 0 0 var(--card-width-sm);
   }
 
   .review-grid {

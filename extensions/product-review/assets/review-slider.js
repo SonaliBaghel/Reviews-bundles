@@ -93,11 +93,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const updateCardWidths = () => {
         const gap = spaceBetween || 20;
         // Subtract 2px buffer to prevent sub-pixel rounding issues
-        // We use the exact same calculation for all breakpoints, relying on the CSS variables to be set correctly
-        // The CSS variables --card-width-md, etc. are used in media queries
 
-        // Default (large screens)
+        // Default (Extra large screens) - Up to 6 cards
         sliderBlock.style.setProperty('--card-width', `calc((100% - (${gap}px * ${cardsPerPage - 1}) - 2px) / ${cardsPerPage})`);
+
+        // Large screens (max 5 cards)
+        const cardsLg = Math.min(cardsPerPage, 5);
+        sliderBlock.style.setProperty('--card-width-lg', `calc((100% - (${gap}px * ${cardsLg - 1}) - 2px) / ${cardsLg})`);
 
         // Medium screens (max 4 cards)
         const cardsMd = Math.min(cardsPerPage, 4);
@@ -107,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const cardsSm = Math.min(cardsPerPage, 3);
         sliderBlock.style.setProperty('--card-width-sm', `calc((100% - (${gap}px * ${cardsSm - 1}) - 2px) / ${cardsSm})`);
 
-        // Extra small screens (max 2 cards) - Note: Mobile usually overrides this to 100%
+        // Extra small screens (max 2 cards)
         const cardsXs = Math.min(cardsPerPage, 2);
         sliderBlock.style.setProperty('--card-width-xs', `calc((100% - (${gap}px * ${cardsXs - 1}) - 2px) / ${cardsXs})`);
     };
