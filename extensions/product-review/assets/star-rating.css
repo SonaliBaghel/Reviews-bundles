@@ -115,6 +115,10 @@
     padding: 1.5rem;
     border-bottom: 1px solid #eee;
     background-color: #fafafa;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .review-item:last-child {
