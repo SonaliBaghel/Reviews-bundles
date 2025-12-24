@@ -30,9 +30,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       include: {
         images: true,
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: [
+        { rating: 'desc' },
+        { createdAt: 'desc' }
+      ]
     });
 
     // --- 2. Consolidate and Deduplicate Reviews ---

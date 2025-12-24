@@ -390,7 +390,12 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(data => {
                 reviews = data.reviews.filter(r => r.status === 'approved')
-                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    .sort((a, b) => {
+                        if (b.rating !== a.rating) {
+                            return b.rating - a.rating;
+                        }
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
 
                 updateDisplay(parseFloat(data.averageRating), parseInt(data.totalReviews, 10));
             })

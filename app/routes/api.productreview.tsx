@@ -357,7 +357,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
           productId,
           status: "approved",
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [
+          { rating: "desc" },
+          { createdAt: "desc" }
+        ],
         include: {
           images: {
             select: { id: true, url: true, altText: true, order: true },
@@ -385,7 +388,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
           status: "approved",
           isBundleReview: false
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [
+          { rating: "desc" },
+          { createdAt: "desc" }
+        ],
         include: {
           images: {
             select: { id: true, url: true, altText: true, order: true },

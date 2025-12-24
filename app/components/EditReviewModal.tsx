@@ -127,7 +127,7 @@ export default function EditReviewModal({
                     <InlineGrid columns={2} gap="400">
                         <Select
                             label="Rating"
-                            options={RATING_OPTIONS}
+                            options={[...RATING_OPTIONS]}
                             value={formData.rating}
                             onChange={(value) =>
                                 setFormData((prev) => ({ ...prev, rating: value }))
@@ -137,7 +137,7 @@ export default function EditReviewModal({
 
                         <Select
                             label="Change Status"
-                            options={getStatusOptions(formData.status)}
+                            options={[...getStatusOptions(formData.status)]}
                             value={selectedStatus}
                             onChange={setSelectedStatus}
                             disabled={isSubmitting}
@@ -194,10 +194,10 @@ export default function EditReviewModal({
                                     </Text>
                                     <InlineStack gap="300" wrap>
                                         {currentImages.map((image, index) => (
-                                            <Box
+                                            <div
                                                 key={image.id}
-                                                position="relative"
                                                 style={{
+                                                    position: "relative",
                                                     textAlign: "right",
                                                     borderRadius: "12px",
                                                     overflow: "hidden",
@@ -210,10 +210,8 @@ export default function EditReviewModal({
                                                     cursor: "default",
                                                 }}
                                             >
-                                                <Button
-                                                    size="slim"
-                                                    tone="critical"
-                                                    variant="primary"
+                                                <button
+                                                    type="button"
                                                     onClick={() => handleRemoveImage(image.id)}
                                                     disabled={isSubmitting}
                                                     style={{
@@ -235,10 +233,14 @@ export default function EditReviewModal({
                                                         visibility: imagesToRemove.includes(image.id)
                                                             ? "hidden"
                                                             : "visible",
+                                                        backgroundColor: "var(--p-color-bg-fill-critical)",
+                                                        color: "var(--p-color-text-on-color)",
+                                                        border: "none",
+                                                        cursor: isSubmitting ? "not-allowed" : "pointer",
                                                     }}
                                                 >
                                                     ×
-                                                </Button>
+                                                </button>
                                                 <img
                                                     src={image.url}
                                                     alt={image.altText || `Review image ${index + 1}`}
@@ -249,7 +251,7 @@ export default function EditReviewModal({
                                                         display: "block",
                                                     }}
                                                 />
-                                            </Box>
+                                            </div>
                                         ))}
                                     </InlineStack>
                                 </Box>
