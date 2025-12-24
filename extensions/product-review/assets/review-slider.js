@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
         sliderBlock.style.setProperty('--star-color', settings.starColor || '#FFD700');
         sliderBlock.style.setProperty('--section-border-radius', `${settings.sectionBorderRadius || 12}px`);
 
-        cardsPerPage = settings.reviewsPerSlide || 3;
+        cardsPerPage = parseInt(settings.reviewsPerSlide, 10) || 3;
         displayType = settings.displayType || 'slider';
 
         // Grid settings

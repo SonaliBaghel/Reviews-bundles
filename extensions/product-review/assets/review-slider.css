@@ -643,15 +643,11 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 1400px) {
-  .review-card {
-    flex: 0 0 var(--card-width-lg);
-  }
-}
+/* Removed max-width: 1400px to allow up to 6 cards on screens > 1200px */
 
 @media (max-width: 1200px) {
   .review-card {
-    flex: 0 0 var(--card-width-md);
+    flex: 0 0 var(--card-width-lg);
   }
 
   .review-grid {
@@ -659,13 +655,13 @@
   }
 
   .review-carousel-container {
-    padding: 0 50px;
+    padding: 0 40px;
   }
 }
 
 @media (max-width: 992px) {
   .review-card {
-    flex: 0 0 var(--card-width-sm);
+    flex: 0 0 var(--card-width-md);
   }
 
   .review-grid {
