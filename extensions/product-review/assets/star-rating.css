@@ -108,9 +108,8 @@
 .reviews-container {
     margin-top: 1rem !important;
     display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: none !important;
+    width: auto;
+
     overflow-y: visible !important;
     overflow-x: hidden !important;
 }
