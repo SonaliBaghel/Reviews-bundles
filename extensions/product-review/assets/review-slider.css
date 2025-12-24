@@ -645,13 +645,13 @@
 /* Responsive adjustments */
 @media (max-width: 1600px) {
   .review-card {
-    flex: 0 0 calc(var(--card-width-md) - 20px);
+    flex: 0 0 var(--card-width-md);
   }
 }
 
 @media (max-width: 1200px) {
   .review-card {
-    flex: 0 0 calc(var(--card-width-sm) - 20px);
+    flex: 0 0 var(--card-width-sm);
   }
 
   .review-grid {
@@ -665,7 +665,7 @@
 
 @media (max-width: 992px) {
   .review-card {
-    flex: 0 0 calc(var(--card-width-xs) - 20px);
+    flex: 0 0 var(--card-width-xs);
   }
 
   .review-grid {
@@ -689,8 +689,8 @@
   }
 
   .review-card {
-    flex: 0 0 calc(100% - 10px);
-    margin: 0 5px;
+    flex: 0 0 100%;
+    margin: 0;
   }
 
   .review-carousel-container {

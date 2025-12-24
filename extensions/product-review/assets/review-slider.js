@@ -92,11 +92,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const updateCardWidths = () => {
         const gap = spaceBetween || 20;
-        // Subtract 2px buffer to prevent sub-pixel rounding issues causing the last card to drop or be cut off
+        // Subtract 2px buffer to prevent sub-pixel rounding issues
+        // We use the exact same calculation for all breakpoints, relying on the CSS variables to be set correctly
+        // The CSS variables --card-width-md, etc. are used in media queries
+
+        // Default (large screens)
         sliderBlock.style.setProperty('--card-width', `calc((100% - (${gap}px * ${cardsPerPage - 1}) - 2px) / ${cardsPerPage})`);
-        sliderBlock.style.setProperty('--card-width-md', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 4) - 1}) - 2px) / ${Math.min(cardsPerPage, 4)})`);
-        sliderBlock.style.setProperty('--card-width-sm', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 3) - 1}) - 2px) / ${Math.min(cardsPerPage, 3)})`);
-        sliderBlock.style.setProperty('--card-width-xs', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 2) - 1}) - 2px) / ${Math.min(cardsPerPage, 2)})`);
+
+        // Medium screens (max 4 cards)
+        const cardsMd = Math.min(cardsPerPage, 4);
+        sliderBlock.style.setProperty('--card-width-md', `calc((100% - (${gap}px * ${cardsMd - 1}) - 2px) / ${cardsMd})`);
+
+        // Small screens (max 3 cards)
+        const cardsSm = Math.min(cardsPerPage, 3);
+        sliderBlock.style.setProperty('--card-width-sm', `calc((100% - (${gap}px * ${cardsSm - 1}) - 2px) / ${cardsSm})`);
+
+        // Extra small screens (max 2 cards) - Note: Mobile usually overrides this to 100%
+        const cardsXs = Math.min(cardsPerPage, 2);
+        sliderBlock.style.setProperty('--card-width-xs', `calc((100% - (${gap}px * ${cardsXs - 1}) - 2px) / ${cardsXs})`);
     };
 
     function applySettingsToCss(settings) {
