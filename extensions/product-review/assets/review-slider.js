@@ -91,23 +91,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const updateCardWidths = () => {
-        const root = document.documentElement;
         const gap = spaceBetween || 20;
-        root.style.setProperty('--card-width', `calc((100% - (${gap}px * ${cardsPerPage - 1})) / ${cardsPerPage})`);
-        root.style.setProperty('--card-width-md', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 4) - 1})) / ${Math.min(cardsPerPage, 4)})`);
-        root.style.setProperty('--card-width-sm', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 3) - 1})) / ${Math.min(cardsPerPage, 3)})`);
-        root.style.setProperty('--card-width-xs', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 2) - 1})) / ${Math.min(cardsPerPage, 2)})`);
+        // Subtract 2px buffer to prevent sub-pixel rounding issues causing the last card to drop or be cut off
+        sliderBlock.style.setProperty('--card-width', `calc((100% - (${gap}px * ${cardsPerPage - 1}) - 2px) / ${cardsPerPage})`);
+        sliderBlock.style.setProperty('--card-width-md', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 4) - 1}) - 2px) / ${Math.min(cardsPerPage, 4)})`);
+        sliderBlock.style.setProperty('--card-width-sm', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 3) - 1}) - 2px) / ${Math.min(cardsPerPage, 3)})`);
+        sliderBlock.style.setProperty('--card-width-xs', `calc((100% - (${gap}px * ${Math.min(cardsPerPage, 2) - 1}) - 2px) / ${Math.min(cardsPerPage, 2)})`);
     };
 
     function applySettingsToCss(settings) {
-        const root = document.documentElement;
-
         // Existing color settings
-        root.style.setProperty('--review-slider-bg', settings.backgroundColor || '#f9f9f9');
-        root.style.setProperty('--heading-color', settings.headingColor || '#222222');
-        root.style.setProperty('--review-card-bg', settings.reviewCardColor || '#ffffff');
-        root.style.setProperty('--star-color', settings.starColor || '#FFD700');
-        root.style.setProperty('--section-border-radius', `${settings.sectionBorderRadius || 12}px`);
+        sliderBlock.style.setProperty('--review-slider-bg', settings.backgroundColor || '#f9f9f9');
+        sliderBlock.style.setProperty('--heading-color', settings.headingColor || '#222222');
+        sliderBlock.style.setProperty('--review-card-bg', settings.reviewCardColor || '#ffffff');
+        sliderBlock.style.setProperty('--star-color', settings.starColor || '#FFD700');
+        sliderBlock.style.setProperty('--section-border-radius', `${settings.sectionBorderRadius || 12}px`);
 
         cardsPerPage = settings.reviewsPerSlide || 3;
         displayType = settings.displayType || 'slider';
@@ -115,8 +113,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Grid settings
         gridRows = settings.gridRows || 2;
         gridColumns = settings.gridColumns || 2;
-        root.style.setProperty('--grid-rows', gridRows);
-        root.style.setProperty('--grid-columns', gridColumns);
+        sliderBlock.style.setProperty('--grid-rows', gridRows);
+        sliderBlock.style.setProperty('--grid-columns', gridColumns);
 
         // Slider settings 
         sliderAutoplay = settings.sliderAutoplay ?? true;
@@ -128,40 +126,40 @@ document.addEventListener('DOMContentLoaded', function () {
         sliderEffect = settings.sliderEffect ?? 'slide';
 
         // Apply space between to CSS
-        root.style.setProperty('--space-between', `${spaceBetween}px`);
+        sliderBlock.style.setProperty('--space-between', `${spaceBetween}px`);
 
         // Responsive grid columns
-        root.style.setProperty('--grid-columns-sm', Math.min(gridColumns, 3));
-        root.style.setProperty('--grid-columns-xs', Math.min(gridColumns, 2));
+        sliderBlock.style.setProperty('--grid-columns-sm', Math.min(gridColumns, 3));
+        sliderBlock.style.setProperty('--grid-columns-xs', Math.min(gridColumns, 2));
 
         // Text styling settings - Use 'inherit' for theme font
-        root.style.setProperty('--heading-font-family',
+        sliderBlock.style.setProperty('--heading-font-family',
             settings.headingFontFamily === 'theme' ? 'inherit' : (settings.headingFontFamily || 'inherit'));
-        root.style.setProperty('--heading-font-size', `${settings.headingFontSize || 40}px`);
-        root.style.setProperty('--heading-font-weight', settings.headingFontWeight || 'bold');
-        root.style.setProperty('--heading-font-style', settings.headingFontStyle || 'normal');
-        root.style.setProperty('--heading-text-transform', settings.headingTextTransform || 'uppercase');
-        root.style.setProperty('--heading-letter-spacing', `${settings.headingLetterSpacing || 0}px`);
-        root.style.setProperty('--heading-line-height', settings.headingLineHeight || 1.2);
-        root.style.setProperty('--heading-text-shadow', settings.headingTextShadow || 'none');
+        sliderBlock.style.setProperty('--heading-font-size', `${settings.headingFontSize || 40}px`);
+        sliderBlock.style.setProperty('--heading-font-weight', settings.headingFontWeight || 'bold');
+        sliderBlock.style.setProperty('--heading-font-style', settings.headingFontStyle || 'normal');
+        sliderBlock.style.setProperty('--heading-text-transform', settings.headingTextTransform || 'uppercase');
+        sliderBlock.style.setProperty('--heading-letter-spacing', `${settings.headingLetterSpacing || 0}px`);
+        sliderBlock.style.setProperty('--heading-line-height', settings.headingLineHeight || 1.2);
+        sliderBlock.style.setProperty('--heading-text-shadow', settings.headingTextShadow || 'none');
 
-        root.style.setProperty('--rating-label-font-family',
+        sliderBlock.style.setProperty('--rating-label-font-family',
             settings.ratingLabelFontFamily === 'theme' ? 'inherit' : (settings.ratingLabelFontFamily || 'inherit'));
-        root.style.setProperty('--rating-label-font-size', `${settings.ratingLabelFontSize || 18}px`);
-        root.style.setProperty('--rating-label-font-weight', settings.ratingLabelFontWeight || '600');
-        root.style.setProperty('--rating-label-color', settings.ratingLabelColor || '#555555');
+        sliderBlock.style.setProperty('--rating-label-font-size', `${settings.ratingLabelFontSize || 18}px`);
+        sliderBlock.style.setProperty('--rating-label-font-weight', settings.ratingLabelFontWeight || '600');
+        sliderBlock.style.setProperty('--rating-label-color', settings.ratingLabelColor || '#555555');
 
-        root.style.setProperty('--rating-value-font-family',
+        sliderBlock.style.setProperty('--rating-value-font-family',
             settings.ratingValueFontFamily === 'theme' ? 'inherit' : (settings.ratingValueFontFamily || 'inherit'));
-        root.style.setProperty('--rating-value-font-size', `${settings.ratingValueFontSize || 18}px`);
-        root.style.setProperty('--rating-value-font-weight', settings.ratingValueFontWeight || '600');
-        root.style.setProperty('--rating-value-color', settings.ratingValueColor || '#555555');
+        sliderBlock.style.setProperty('--rating-value-font-size', `${settings.ratingValueFontSize || 18}px`);
+        sliderBlock.style.setProperty('--rating-value-font-weight', settings.ratingValueFontWeight || '600');
+        sliderBlock.style.setProperty('--rating-value-color', settings.ratingValueColor || '#555555');
 
-        root.style.setProperty('--review-count-font-family',
+        sliderBlock.style.setProperty('--review-count-font-family',
             settings.reviewCountFontFamily === 'theme' ? 'inherit' : (settings.reviewCountFontFamily || 'inherit'));
-        root.style.setProperty('--review-count-font-size', `${settings.reviewCountFontSize || 16}px`);
-        root.style.setProperty('--review-count-font-weight', settings.reviewCountFontWeight || 'normal');
-        root.style.setProperty('--review-count-color', settings.reviewCountColor || '#777777');
+        sliderBlock.style.setProperty('--review-count-font-size', `${settings.reviewCountFontSize || 16}px`);
+        sliderBlock.style.setProperty('--review-count-font-weight', settings.reviewCountFontWeight || 'normal');
+        sliderBlock.style.setProperty('--review-count-color', settings.reviewCountColor || '#777777');
 
         // Update text content
         if (elements.sectionTitle) {

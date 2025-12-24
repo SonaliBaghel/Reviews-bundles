@@ -138,6 +138,7 @@
   overflow: hidden;
   position: relative;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .review-carousel-track {
@@ -146,6 +147,8 @@
   padding: 10px 0;
   width: 100%;
   gap: var(--space-between, 20px);
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 /* Effect styles */
