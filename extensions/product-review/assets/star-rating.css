@@ -93,9 +93,8 @@
 .reviews-container {
     margin-top: 1rem;
     display: block;
-    max-height: 600px;
-    overflow-y: auto;
     width: 100%;
+    overflow-x: hidden;
 }
 
 .reviews-list {
@@ -127,8 +126,8 @@
     font-weight: 600;
     color: #222;
     font-size: 0.95rem;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .review-date {
@@ -148,8 +147,8 @@
     font-size: 1.1rem;
     font-weight: 600;
     color: #333;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .review-content {
@@ -157,8 +156,8 @@
     color: #444;
     font-size: 0.95rem;
     margin-top: 0.5rem;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .review-images-container {

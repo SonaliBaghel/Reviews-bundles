@@ -263,8 +263,8 @@
   font-weight: 700;
   color: #333;
   margin-bottom: 0.6rem;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .review-card-content {
@@ -275,8 +275,8 @@
   flex-grow: 1;
   position: relative;
   overflow: hidden;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .review-card-content.collapsed {
@@ -345,8 +345,8 @@
   color: #777;
   margin-top: 0.8rem;
   font-style: italic;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .carousel-arrow {
