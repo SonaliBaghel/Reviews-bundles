@@ -3,20 +3,18 @@
     padding: 1.5rem;
     margin-bottom: 2rem;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: 100vw !important;
     overflow-x: hidden !important;
+    overflow-y: hidden !important;
     box-sizing: border-box !important;
     background: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: #333;
-    display: block !important;
 }
 
 .star-rating-block * {
     max-width: 100% !important;
     box-sizing: border-box !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-all !important;
 }
 
 .star-rating-block * {
@@ -106,12 +104,10 @@
 }
 
 .reviews-container {
-    margin-top: 1rem !important;
-    display: block !important;
-    width: auto;
-
-    overflow-y: visible !important;
-    overflow-x: hidden !important;
+    margin-top: 1rem;
+    display: block;
+   width: auto;
+    
 }
 
 .reviews-list {
@@ -191,9 +187,9 @@
     flex-wrap: wrap;
     gap: 10px;
     justify-content: flex-start;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .review-images-container img {
