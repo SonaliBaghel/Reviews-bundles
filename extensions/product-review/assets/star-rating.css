@@ -3,6 +3,8 @@
     padding: 1.5rem;
     margin-bottom: 2rem;
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     box-sizing: border-box;
     background: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -10,6 +12,7 @@
 }
 
 .star-rating-block * {
+    max-width: 100%;
     box-sizing: border-box;
 }
 
@@ -97,8 +100,8 @@
 .reviews-container {
     margin-top: 1rem;
     display: block;
-    /* max-height: 600px; */
-    overflow-y: auto;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .reviews-list {
@@ -170,9 +173,6 @@
     flex-wrap: wrap;
     gap: 10px;
     justify-content: flex-start;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
 }
 
 .review-images-container img {
@@ -422,8 +422,8 @@
 
 .image-preview-item {
     position: relative;
-    /* max-width: 80px;
-    max-height: 80px; */
+    max-width: 80px;
+    max-height: 80px;
     display: flex;
     justify-content: center;
     align-items: center;
