@@ -3,10 +3,17 @@
     padding: 1.5rem;
     margin-bottom: 2rem;
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     box-sizing: border-box;
     background: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: #333;
+}
+
+.star-rating-block * {
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .star-rating-block.loading {

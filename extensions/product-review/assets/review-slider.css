@@ -8,10 +8,15 @@
   overflow-x: hidden;
   position: relative;
   width: 100%;
-  max-width: 85vw;
+  max-width: 100%;
   box-sizing: border-box;
   margin: 0 auto;
   border-radius: var(--section-border-radius, 12px);
+}
+
+.review-slider-block * {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .review-slider-block.loading {
@@ -245,6 +250,7 @@
   min-height: 280px;
   text-align: left;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
+  min-width: 0;
 }
 
 .review-card:hover {
