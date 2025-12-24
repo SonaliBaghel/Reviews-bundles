@@ -1,10 +1,11 @@
 import {
-    BlockStack, Box, Divider, Text, Select, Tabs, ResourceList, ResourceItem, Thumbnail, Badge, Button, InlineStack, Pagination, Link as PolarisLink
+    BlockStack, Box, Divider, Text, Select, Tabs, ResourceList, ResourceItem, Thumbnail, Badge, Button, InlineStack, Pagination, Link as PolarisLink, Popover, ActionList
 } from "@shopify/polaris";
-import { FolderIcon } from '@shopify/polaris-icons';
+import { FolderIcon, SortIcon } from '@shopify/polaris-icons';
 import { Icon } from "@shopify/polaris";
 import ReviewList, { Review } from "../ReviewList";
 import ProductOverviewTable, { ProductSummary } from "../ProductOverviewTable";
+import { useState, useCallback } from "react";
 
 interface ReviewBundle {
     id: string; name: string; bundleProductId: string; productIds: string[];
@@ -65,6 +66,21 @@ export function ReviewTabsSection({
     getProductTitleFromNumericId,
     getProductImageFromNumericId
 }: ReviewTabsSectionProps) {
+    const [popoverActive, setPopoverActive] = useState(false);
+
+    const togglePopoverActive = useCallback(
+        () => setPopoverActive((popoverActive) => !popoverActive),
+        [],
+    );
+
+    const handleSortSelection = useCallback(
+        (value: string) => {
+            handleSortChange(value);
+            setPopoverActive(false);
+        },
+        [handleSortChange],
+    );
+
     const tabs = [
         { id: 'all-reviews', content: 'All Reviews', panelID: 'all-reviews-panel', badge: totalReviews > 0 ? String(totalReviews) : undefined },
         { id: 'product-summary', content: 'Product Ratings Overview', panelID: 'product-summary-panel', badge: productSummaries.length > 0 ? String(productSummaries.length) : undefined },
@@ -80,6 +96,8 @@ export function ReviewTabsSection({
             default: return 0;
         }
     });
+
+    const currentSortLabel = sortOptions.find(option => option.value === sortOption)?.label || 'Sort by';
 
     const renderTabContent = () => {
         switch (selectedTab) {
@@ -115,7 +133,23 @@ export function ReviewTabsSection({
                     <BlockStack gap="400">
                         <InlineStack align="space-between" blockAlign="center">
                             <Text as="h2" variant="headingLg" fontWeight="semibold">Product Ratings Overview (Individual Approvals)</Text>
-                            <Select label="Sort products" labelHidden options={sortOptions} value={sortOption} onChange={handleSortChange} />
+                            <Popover
+                                active={popoverActive}
+                                activator={
+                                    <Button onClick={togglePopoverActive} disclosure icon={SortIcon}>
+                                        {currentSortLabel}
+                                    </Button>
+                                }
+                                onClose={togglePopoverActive}
+                            >
+                                <ActionList
+                                    items={sortOptions.map(option => ({
+                                        content: option.label,
+                                        onAction: () => handleSortSelection(option.value),
+                                        active: sortOption === option.value,
+                                    }))}
+                                />
+                            </Popover>
                         </InlineStack>
                         <Divider />
                         <Box padding="500">
