@@ -193,7 +193,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const responseData = await response.json();
-            allReviews = Array.isArray(responseData) ? responseData : [];
+            allReviews = (Array.isArray(responseData) ? responseData : [])
+                .sort((a, b) => {
+                    if (b.rating !== a.rating) {
+                        return b.rating - a.rating;
+                    }
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
 
 
             if (allReviews.length > 0) {
