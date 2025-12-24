@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Reset form
                 this.reset();
                 selectedFiles = [];
-                renderPreview();
+                // renderPreview(); // Removed undefined function call
                 form.reset();
                 selectedFiles = [];
                 renderImagePreviews();
